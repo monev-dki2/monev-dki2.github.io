@@ -221,16 +221,46 @@ window.loadAdminDashboard=async function(){
   document.getElementById('adminMatrix').innerHTML=(d.classes||[]).map(r=>`<tr><td><b>${esc(r.kelas)}</b></td><td>${esc(r.walas)}</td><td>${r.anggota_aktif}</td><td>${r.akun_yaumiyah}</td><td>${r.pengisi_yaumiyah}</td><td>${r.laporan_sekretaris}/5</td><td>${r.sekretaris_aktif?'✓ '+esc(r.sekretaris):'Belum'}</td></tr>`).join('');
  }catch(e){status('adminStatus',e.message,false)}
 }
+async function sendAccessEmail(payload){
+ const res=await fetch(`${SUPABASE_URL}/functions/v1/send-access-email`,{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify(payload)
+ });
+ let data={};
+ try{data=await res.json()}catch(_){}
+ if(!res.ok||data.ok===false) throw new Error(data.error||`Pengiriman email gagal (${res.status}).`);
+ return data;
+}
+
 window.configureSecretary=async function(){
  clearStatus('adminSecStatus');try{
-  const d=await rpc('admin_configure_secretary_v2',{p_admin_token:adminToken,p_class:document.getElementById('adminSecClass').value,p_nopung:document.getElementById('adminSecNopung').value});
-  status('adminSecStatus',`Sekretaris ${d.kelas}: ${d.nama}. PIN sementara: ${d.pin}`,true);await loadAdminDashboard();
+  const email=document.getElementById('adminSecEmail').value.trim();
+  if(!email) throw new Error('Email Sekretaris wajib diisi.');
+  const d=await sendAccessEmail({
+    action:'configure_secretary',
+    admin_token:adminToken,
+    class_code:document.getElementById('adminSecClass').value,
+    nopung:document.getElementById('adminSecNopung').value,
+    email
+  });
+  status('adminSecStatus',d.message||'PIN Sekretaris berhasil dikirim ke email.',true);
+  await loadAdminDashboard();
  }catch(e){status('adminSecStatus',e.message,false)}
 }
 window.activateMember=async function(){
  clearStatus('adminMemberStatus');try{
-  const d=await rpc('admin_activate_member_v2',{p_admin_token:adminToken,p_class:document.getElementById('adminMemberClass').value,p_nopung:document.getElementById('adminMemberNopung').value,p_email:document.getElementById('adminMemberEmail').value||null});
-  status('adminMemberStatus',`Akun ${d.kelas}/${d.nopung} — ${d.nama}. PIN sementara: ${d.pin}`,true);await loadAdminDashboard();
+  const email=document.getElementById('adminMemberEmail').value.trim();
+  if(!email) throw new Error('Email Anggota wajib diisi.');
+  const d=await sendAccessEmail({
+    action:'activate_member',
+    admin_token:adminToken,
+    class_code:document.getElementById('adminMemberClass').value,
+    nopung:document.getElementById('adminMemberNopung').value,
+    email
+  });
+  status('adminMemberStatus',d.message||'PIN Anggota berhasil dikirim ke email.',true);
+  await loadAdminDashboard();
  }catch(e){status('adminMemberStatus',e.message,false)}
 }
 await init();

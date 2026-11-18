@@ -198,21 +198,22 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
         <h3>Aktifkan / Reset Sekretaris</h3>
         <div class="field"><label>Kelas</label><select id="adminSecClass"></select></div>
         <div class="field" style="margin-top:10px"><label>Nopung Sekretaris</label><input id="adminSecNopung" maxlength="7"></div>
-        <div style="margin-top:10px"><button onclick="configureSecretary()">Generate PIN Sekretaris</button></div>
+        <div class="field" style="margin-top:10px"><label>Email Sekretaris</label><input id="adminSecEmail" type="email" required placeholder="nama@email.com"></div>
+<div style="margin-top:10px"><button onclick="configureSecretary()">Kirim PIN Sekretaris via Email</button></div>
         <div id="adminSecStatus" class="status"></div>
       </div>
       <div class="card">
         <h3>Aktifkan / Reset Akun Yaumiyah</h3>
         <div class="field"><label>Kelas</label><select id="adminMemberClass"></select></div>
         <div class="field" style="margin-top:10px"><label>Nopung</label><input id="adminMemberNopung" maxlength="7"></div>
-        <div class="field" style="margin-top:10px"><label>Email (opsional)</label><input id="adminMemberEmail" type="email"></div>
-        <div style="margin-top:10px"><button onclick="activateMember()">Generate PIN Anggota</button></div>
+        <div class="field" style="margin-top:10px"><label>Email Anggota</label><input id="adminMemberEmail" type="email" required placeholder="nama@email.com"></div>
+        <div style="margin-top:10px"><button onclick="activateMember()">Kirim PIN Anggota via Email</button></div>
         <div id="adminMemberStatus" class="status"></div>
       </div>
     </div>
-    <div class="note">Versi uji ini belum mengirim PIN via email otomatis. PIN sementara ditampilkan sekali kepada Admin setelah generate/reset.</div>
+    <div class="note">PIN sementara dikirim otomatis ke email penerima melalui layanan email server-side. PIN tidak ditampilkan di layar Admin.</div>
   </div>
 </div>
-<script type="module" src="./integrated.js?v=20261118-sec1"></script>
+<script type="module" src="./integrated.js?v=20261119-mail1"></script>
 </body>
 </html>
