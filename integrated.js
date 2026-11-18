@@ -61,16 +61,42 @@ window.memberLogin=async function(){
 window.loadMemberDashboard=async function(){
  clearStatus('memberStatus');try{
   memberData=await rpc('member_get_yaumiyah_v2',{p_token:memberToken,p_year:Number(document.getElementById('memberYear').value),p_month:document.getElementById('memberMonth').value});
-  const h=['<div class="table-wrap"><table><thead><tr><th>Pekan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'];
-  memberData.weeks.forEach(w=>h.push(`<tr><td>Pekan ${w.week}</td><td>${w.done?'✓ Sudah diisi':'Belum diisi'}</td><td><button class="light" onclick="openMemberWeek(${w.week})">${w.done?'Lihat/Edit':'Isi'}</button></td></tr>`));
+  const h=['<div class="table-wrap"><table><thead><tr><th>Pekan</th><th>Rentang</th><th>Status</th><th>Aksi</th></tr></thead><tbody>'];
+  memberData.weeks.forEach(w=>{
+    let stateText='';
+    if(w.done) stateText='✓ Sudah diisi';
+    else if(w.state==='current') stateText='Pekan berjalan';
+    else if(w.state==='future') stateText='Belum berjalan';
+    else if(w.state==='closed') stateText='Arsip / read-only';
+    else stateText='Belum diisi';
+    const badge=w.state==='current'?' <span class="pill">Pekan berjalan</span>':'';
+    let action='—';
+    if(w.done) action=`<button class="light" onclick="openMemberWeek(${w.week})">${w.canEdit?'Lihat/Edit':'Lihat'}</button>`;
+    else if(w.canEdit) action=`<button class="light" onclick="openMemberWeek(${w.week})">Isi</button>`;
+    h.push(`<tr><td><b>Pekan ${w.week}</b>${badge}</td><td>${esc(w.label||'')}</td><td>${esc(stateText)}</td><td>${action}</td></tr>`);
+  });
   h.push('</tbody></table></div>');document.getElementById('memberWeeks').innerHTML=h.join('');
+  if(memberData.isCurrentPeriod){
+    const cw=memberData.currentWeek?`Pekan berjalan: P${memberData.currentWeek}. `:'';
+    status('memberStatus',`${cw}Pekan yang belum dimulai terkunci otomatis.`,true);
+  }else{
+    status('memberStatus','Periode arsip: data hanya dapat dilihat.',true);
+  }
  }catch(e){status('memberStatus',e.message,false)}
 }
 window.openMemberWeek=function(week){
  const w=memberData.weeks.find(x=>Number(x.week)===Number(week))||{};
- document.getElementById('yWeek').value=week;document.getElementById('memberFormTitle').textContent=`Mutabaah ${memberData.month} ${memberData.year} — Pekan ${week}`;
+ if(!w.done && !w.canEdit) return;
+ document.getElementById('yWeek').value=week;
+ document.getElementById('memberFormTitle').textContent=`Mutabaah ${memberData.month} ${memberData.year} — Pekan ${week} (${w.label||''})`;
  const map=[['yTilawah','tilawah'],['yQiyamul','qiyamul'],['ySholat','sholat'],['yPuasa','puasa'],['yOlahraga','olahraga'],['yIbr','ibr']];
- map.forEach(([id,k])=>{if(w[k])document.getElementById(id).value=w[k]});
+ map.forEach(([id,k])=>{
+   const el=document.getElementById(id);
+   if(w[k]) el.value=w[k];
+   el.disabled=!w.canEdit;
+ });
+ const saveBtn=document.querySelector('#memberForm button[onclick="saveYaumiyah()"]');
+ if(saveBtn) saveBtn.classList.toggle('hidden',!w.canEdit);
  document.getElementById('memberForm').classList.remove('hidden');
 }
 window.closeMemberForm=()=>document.getElementById('memberForm').classList.add('hidden');
