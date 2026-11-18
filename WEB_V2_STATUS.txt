@@ -1,0 +1,25 @@
+Portal Walas Web v2 - Connected build 2026-11-18
+
+Connected Supabase project: portal-walas-v2
+Region: ap-southeast-1
+
+Migrated data:
+- 30 classes
+- 287 members
+- 275 unique evaluations
+- 33 promotion rubric items
+- 1 admin credential
+
+Authentication:
+- Walas: Class + existing PIN hash, private credential schema, 1-hour hashed session token
+- Admin: Admin ID + existing PIN hash, private credential schema, 1-hour hashed session token
+- Plaintext PINs are not stored
+
+Current modules:
+- Walas monthly evaluation + history
+- Walas promotion evaluation
+- Admin evaluation recap
+- Admin member list, including Mutasi
+- Admin promotion dashboard
+
+Legacy Apps Script portal remains unchanged and can stay live during testing.

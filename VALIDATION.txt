@@ -1,0 +1,18 @@
+Portal Walas Web v2 Starter
+Rubrik Promosi: 33 indikator
+Runtime Web v2: Supabase Auth + PostgreSQL/RPC
+Hosting target: Firebase Hosting
+No Apps Script/Google Sheet in runtime path.
+
+Core RPC:
+- list_active_classes
+- get_walas_dashboard
+- save_walas_evaluations
+- get_promotion_dashboard
+- get_promotion_assessment
+- save_promotion_assessment
+- get_admin_recap
+- get_admin_members
+- get_admin_promotion_dashboard
+
+ZIP SHA256: 9fcfaf8237a25f0734a042336858a5a419ad7a7dc78c862be011085c5c793c42

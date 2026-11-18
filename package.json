@@ -1,0 +1,15 @@
+{
+  "name": "portal-walas-web-v2",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate": "node scripts/migrate-csv.mjs",
+    "provision": "node scripts/provision-users.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "csv-parse": "^6.0.0",
+    "dotenv": "^16.0.0"
+  }
+}

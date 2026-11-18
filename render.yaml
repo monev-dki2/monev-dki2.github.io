@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: portal-walas-v2
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: ./public
