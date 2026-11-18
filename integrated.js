@@ -126,7 +126,7 @@ window.loadMemberDashboard=async function(){
     let action='—';
     if(w.done) action=`<button class="light" onclick="openMemberWeek(${w.week})">${w.canEdit?'Lihat/Edit':'Lihat'}</button>`;
     else if(w.canEdit) action=`<button class="light" onclick="openMemberWeek(${w.week})">Isi</button>`;
-    h.push(`<tr><td><b>Pekan ${w.week}</b>${badge}</td><td>${esc(w.label||'')}</td><td>${esc(stateText)}</td><td>${action}</td></tr>`);
+    h.push(`<tr><td><b>Pekan ${w.week}</b>${badge}</td><td>${esc(w.label||'')}</td><td>${stateText}</td><td>${action}</td></tr>`);
   });
   h.push('</tbody></table></div>');document.getElementById('memberWeeks').innerHTML=h.join('');
   if(memberData.isCurrentPeriod){
@@ -256,7 +256,8 @@ window.loadWalasMonitor=async function(){
   }).join('');
   document.getElementById('walasMembers').innerHTML=(d.members||[]).map(m=>
     `<tr><td>${esc(m.nopung)}</td><td>${esc(m.nama)}</td><td>${esc(m.status)}</td>
-     <td>${m.account_active?'✓ Aktif':'Belum'}</td><td>${m.yaumiyah_filled}/5</td></tr>`
+     <td>${dot(!!m.account_active,'Aktif','Belum')}</td>
+     <td>${m.yaumiyah_filled>=5?dot(true,`${m.yaumiyah_filled}/5`,''):dot(false,'',`${m.yaumiyah_filled}/5`)}</td></tr>`
   ).join('');
  }catch(e){status('walasStatus',e.message,false)}
 }
@@ -271,10 +272,60 @@ window.adminLogin=async function(){
 window.loadAdminDashboard=async function(){
  clearStatus('adminStatus');try{
   const d=await rpc('admin_integrated_dashboard_v2',{p_admin_token:adminToken,p_year:Number(document.getElementById('adminYear').value),p_month:document.getElementById('adminMonth').value});
-  document.getElementById('adminMatrix').innerHTML=(d.classes||[]).map(r=>`<tr><td><b>${esc(r.kelas)}</b></td><td>${esc(r.walas)}</td><td>${r.anggota_aktif}</td><td>${r.akun_yaumiyah}</td><td>${r.pengisi_yaumiyah}</td><td>${r.laporan_sekretaris}/5</td><td>${r.sekretaris_aktif?'✓ '+esc(r.sekretaris):'Belum'}</td></tr>`).join('');
+  document.getElementById('adminMatrix').innerHTML=(d.classes||[]).map(r=>`<tr>
+    <td><button class="metric-link" onclick="openAdminDetail('${esc(r.kelas)}')">${esc(r.kelas)}</button></td>
+    <td>${esc(r.walas)}</td>
+    <td><button class="metric-link" onclick="openAdminDetail('${esc(r.kelas)}','members')">${r.anggota_aktif}</button></td>
+    <td><button class="metric-link" onclick="openAdminDetail('${esc(r.kelas)}','accounts')">${r.akun_yaumiyah}</button></td>
+    <td><button class="metric-link" onclick="openAdminDetail('${esc(r.kelas)}','yaumiyah')">${r.pengisi_yaumiyah}</button></td>
+    <td><button class="metric-link" onclick="openAdminDetail('${esc(r.kelas)}','reports')">${r.laporan_sekretaris}/5</button></td>
+    <td>${r.sekretaris_aktif?dot(true,esc(r.sekretaris)||'Aktif',''):dot(false,'','Belum')}</td>
+  </tr>`).join('');
  }catch(e){status('adminStatus',e.message,false)}
 }
 
+
+
+window.openAdminDetail=async function(kelas,focus='all'){
+ const panel=document.getElementById('adminDetailPanel');
+ panel.classList.remove('hidden');
+ document.getElementById('adminDetailTitle').textContent=`Detail ${kelas} — ${document.getElementById('adminMonth').value} ${document.getElementById('adminYear').value}`;
+ clearStatus('adminDetailStatus');
+ try{
+   const d=await rpc('admin_integrated_detail_v2',{
+     p_admin_token:adminToken,
+     p_year:Number(document.getElementById('adminYear').value),
+     p_month:document.getElementById('adminMonth').value,
+     p_class:kelas
+   });
+
+   document.getElementById('adminDetailMembers').innerHTML=(d.members||[]).map(m=>{
+     const doneWeeks=new Set((m.weeks||[]).map(x=>Number(x.week)));
+     const weekCells=[1,2,3,4,5].map(w=>`<td>${weekDot(doneWeeks.has(w))}</td>`).join('');
+     return `<tr>
+       <td>${esc(m.nopung)}</td><td>${esc(m.nama)}</td>
+       <td>${dot(!!m.accountActive,'Aktif','Belum')}</td>
+       ${weekCells}
+       <td>${m.yaumiyahFilled>=5?dot(true,`${m.yaumiyahFilled}/5`,''):dot(false,'',`${m.yaumiyahFilled}/5`)}</td>
+     </tr>`;
+   }).join('');
+
+   document.getElementById('adminDetailReports').innerHTML=(d.reports||[]).map(r=>`<tr>
+     <td>P${r.week}</td><td>${esc(r.label||'')}</td>
+     <td>${dot(!!r.reported,'Sudah','Belum')}</td>
+     <td>${esc(r.executionType||'—')}</td>
+     <td>${esc(r.executionDate||'—')}</td>
+     <td>${esc(r.naqibAttendance||'—')}</td>
+   </tr>`).join('');
+
+   if(focus==='reports') document.getElementById('adminDetailReports').closest('.table-wrap').scrollIntoView({behavior:'smooth',block:'start'});
+   else panel.scrollIntoView({behavior:'smooth',block:'start'});
+ }catch(e){status('adminDetailStatus',e.message,false)}
+}
+
+window.closeAdminDetail=function(){
+ document.getElementById('adminDetailPanel').classList.add('hidden');
+}
 
 window.loadAccountRequests=async function(){
  clearStatus('adminRequestStatus');
