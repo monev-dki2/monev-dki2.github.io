@@ -36,7 +36,7 @@ async function init(){
  try{
    classes=await rpc('legacy_public_classes');
    const vals=classes.map(x=>x.kelas);
-   ['memberClass','secretaryClass','walasClass','memberReqClass','secretaryReqClass'].forEach(id=>fillSelect(id,vals));
+   ['memberClass','secretaryClass','walasClass','memberReqClass','secretaryReqClass','adminDesignateClass'].forEach(id=>fillSelect(id,vals));
    MONTHS.forEach(()=>{});
    ['memberMonth','secMonth','walasMonth','adminMonth'].forEach(id=>fillSelect(id,MONTHS,MONTHS[new Date().getMonth()]));
    const y=new Date().getFullYear();
@@ -266,7 +266,7 @@ window.adminLogin=async function(){
  clearStatus('adminLoginStatus');try{
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
   adminToken=d.token;document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
-  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();
+  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();loadSecretaryCandidates();
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
 window.loadAdminDashboard=async function(){
@@ -325,6 +325,37 @@ window.openAdminDetail=async function(kelas,focus='all'){
 
 window.closeAdminDetail=function(){
  document.getElementById('adminDetailPanel').classList.add('hidden');
+}
+
+
+window.loadSecretaryCandidates=async function(){
+ clearStatus('adminDesignateStatus');
+ try{
+   const kelas=document.getElementById('adminDesignateClass').value;
+   if(!kelas) return;
+   const d=await rpc('admin_class_active_members_v2',{p_admin_token:adminToken,p_class:kelas});
+   const sel=document.getElementById('adminDesignateNopung');
+   sel.innerHTML=(d.members||[]).map(m=>
+     `<option value="${esc(m.nopung)}">${esc(m.nama)} — ${esc(m.nopung)}${m.designated?' (Sekretaris saat ini)':''}</option>`
+   ).join('');
+   if(d.designatedNopung) sel.value=d.designatedNopung;
+ }catch(e){status('adminDesignateStatus',e.message,false)}
+}
+
+window.designateSecretary=async function(){
+ clearStatus('adminDesignateStatus');
+ try{
+   const kelas=document.getElementById('adminDesignateClass').value;
+   const nopung=document.getElementById('adminDesignateNopung').value;
+   if(!kelas||!nopung) throw new Error('Pilih kelas dan anggota terlebih dahulu.');
+   const d=await rpc('admin_designate_secretary_v2',{
+     p_admin_token:adminToken,p_class:kelas,p_nopung:nopung
+   });
+   status('adminDesignateStatus',d.message||'Sekretaris berhasil ditetapkan.',true);
+   await loadSecretaryCandidates();
+   await loadAdminDashboard();
+   await loadAccountRequests();
+ }catch(e){status('adminDesignateStatus',e.message,false)}
 }
 
 window.loadAccountRequests=async function(){

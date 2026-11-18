@@ -262,6 +262,17 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
 </div>
     </div>
     <div class="card">
+      <h3>Tetapkan Sekretaris Kelas</h3>
+      <div class="muted">Hanya Admin yang dapat menetapkan siapa Sekretaris. Penetapan tidak langsung membuat PIN; Sekretaris yang ditetapkan tetap harus mengajukan aktivasi dan memverifikasi emailnya.</div>
+      <div class="row" style="margin-top:12px">
+        <div class="field"><label>Kelas</label><select id="adminDesignateClass" onchange="loadSecretaryCandidates()"></select></div>
+        <div class="field"><label>Anggota Aktif</label><select id="adminDesignateNopung"></select></div>
+      </div>
+      <div style="margin-top:10px"><button onclick="designateSecretary()">Tetapkan sebagai Sekretaris</button></div>
+      <div id="adminDesignateStatus" class="status"></div>
+    </div>
+
+    <div class="card">
       <div class="actions" style="justify-content:space-between;align-items:center">
         <div>
           <h3 style="margin-bottom:4px">Permintaan Akun</h3>
@@ -280,6 +291,6 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
     <div class="note">Admin tidak mengetik email dan tidak melihat PIN. Pemohon memverifikasi email sendiri; setelah disetujui, PIN sementara dikirim otomatis oleh server.</div>
   </div>
 </div>
-<script type="module" src="./integrated.js?v=20261119-status1"></script>
+<script type="module" src="./integrated.js?v=20261119-secdesignation1"></script>
 </body>
 </html>
