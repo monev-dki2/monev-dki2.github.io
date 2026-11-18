@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portal Monev DKI2 — Integrated Test</title>
+<style>
+:root{--teal:#0f766e;--teal2:#115e59;--dark:#064e3b;--bg:#eef8f7;--line:#cfe3e0;--muted:#64748b;--green:#ecfdf5;--red:#fef2f2;--orange:#fff7ed;--blue:#eff6ff}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:#173b3a}
+.wrap{max-width:1300px;margin:20px auto;padding:0 14px 40px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px rgba(15,118,110,.06)}
+h1,h2,h3{margin:0 0 8px;color:var(--teal2)} h1{font-size:26px} h2{font-size:20px}.muted{color:var(--muted);font-size:13px}
+.tabs,.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tabs button{background:#dcebe9;color:var(--dark)}.tabs button.active{background:var(--teal);color:#fff}
+button{border:0;border-radius:10px;background:var(--teal);color:#fff;padding:10px 14px;font-weight:700;cursor:pointer} button.light{background:#e3f1ef;color:var(--dark);border:1px solid #b9d9d4}
+button.secondary{background:#155e75} button.danger{background:#b91c1c} button:disabled{opacity:.55;cursor:not-allowed}
+.hidden{display:none!important}.row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:end}.field{grid-column:span 4}.field.w6{grid-column:span 6}.field.w3{grid-column:span 3}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:5px} input,select{width:100%;padding:10px 11px;border:1px solid #bcd5d2;border-radius:9px;background:#fff;font-size:14px}
+.status{display:none;margin-top:10px;padding:10px 12px;border-radius:9px;font-size:13px}.status.ok{display:block;background:#dcfce7;color:#166534}.status.err{display:block;background:#fee2e2;color:#991b1b}
+.note{background:var(--orange);border:1px solid #fdba74;padding:10px 12px;border-radius:10px;font-size:13px}.oknote{background:var(--green);border:1px solid #86efac;padding:10px 12px;border-radius:10px;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}.kpi{background:#f7fbfa;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}.kpi b{display:block;font-size:22px;color:var(--dark)}.kpi span{font-size:12px;color:var(--muted)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px} table{border-collapse:collapse;width:100%;font-size:13px} th{background:#075e54;color:white;padding:9px;white-space:nowrap} td{padding:8px;border-bottom:1px solid #dce8e6;vertical-align:middle}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.checkgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.check{border:1px solid #cbd5e1;border-radius:9px;padding:8px}
+.pill{display:inline-block;background:#d1fae5;color:#065f46;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700}
+a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;border-radius:10px;padding:10px 14px;font-weight:700}
+@media(max-width:820px){.field,.field.w6,.field.w3{grid-column:span 12}.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.checkgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Portal Monitoring dan Evaluasi DKI2</h1>
+    <div class="muted">Integrated test — Evaluasi Walas • Yaumiyah • Sekretaris Kelas • Admin</div>
+  </div>
+
+  <div id="loginCard" class="card">
+    <div class="tabs">
+      <button id="tabMember" class="active" onclick="setRole('member')">Anggota / Yaumiyah</button>
+      <button id="tabSecretary" onclick="setRole('secretary')">Sekretaris Kelas</button>
+      <button id="tabWalas" onclick="setRole('walas')">Walas</button>
+      <button id="tabAdmin" onclick="setRole('admin')">Admin</button>
+    </div>
+
+    <div id="loginMember" style="margin-top:16px">
+      <h2>Login Anggota</h2>
+      <div class="row">
+        <div class="field"><label>Kelas</label><select id="memberClass"></select></div>
+        <div class="field"><label>Nopung</label><input id="memberNopung" maxlength="7" inputmode="numeric"></div>
+        <div class="field"><label>PIN</label><input id="memberPin" type="password"></div>
+      </div>
+      <div style="margin-top:10px"><button onclick="memberLogin()">Masuk</button></div>
+      <div id="memberLoginStatus" class="status"></div>
+    </div>
+
+    <div id="loginSecretary" class="hidden" style="margin-top:16px">
+      <h2>Login Sekretaris Kelas</h2>
+      <div class="row">
+        <div class="field w6"><label>Kelas</label><select id="secretaryClass"></select></div>
+        <div class="field w6"><label>PIN Sekretaris</label><input id="secretaryPin" type="password"></div>
+      </div>
+      <div style="margin-top:10px"><button onclick="secretaryLogin()">Masuk</button></div>
+      <div id="secretaryLoginStatus" class="status"></div>
+    </div>
+
+    <div id="loginWalas" class="hidden" style="margin-top:16px">
+      <h2>Login Walas</h2>
+      <div class="row">
+        <div class="field w6"><label>Kelas</label><select id="walasClass"></select></div>
+        <div class="field w6"><label>PIN Walas</label><input id="walasPin" type="password"></div>
+      </div>
+      <div style="margin-top:10px"><button onclick="walasLogin()">Masuk</button></div>
+      <div id="walasLoginStatus" class="status"></div>
+    </div>
+
+    <div id="loginAdmin" class="hidden" style="margin-top:16px">
+      <h2>Login Admin</h2>
+      <div class="row">
+        <div class="field w6"><label>Admin ID</label><input id="adminId" value="ADMIN"></div>
+        <div class="field w6"><label>PIN Admin</label><input id="adminPin" type="password"></div>
+      </div>
+      <div style="margin-top:10px"><button onclick="adminLogin()">Masuk</button></div>
+      <div id="adminLoginStatus" class="status"></div>
+    </div>
+  </div>
+
+  <div id="memberApp" class="hidden">
+    <div class="card">
+      <div class="actions" style="justify-content:space-between">
+        <div><h2 id="memberTitle">Yaumiyah</h2><div id="memberIdentity" class="muted"></div></div>
+        <button class="light" onclick="location.reload()">Keluar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Bulan</label><select id="memberMonth"></select></div>
+        <div class="field"><label>Tahun</label><input id="memberYear" type="number"></div>
+        <div class="field"><button onclick="loadMemberDashboard()">Muat</button></div>
+      </div>
+      <div id="memberStatus" class="status"></div>
+    </div>
+    <div class="card">
+      <h3>Mutabaah Mingguan</h3>
+      <div id="memberWeeks"></div>
+    </div>
+    <div id="memberForm" class="card hidden">
+      <h3 id="memberFormTitle">Isi Yaumiyah</h3>
+      <div class="row">
+        <div class="field"><label>Pekan</label><input id="yWeek" type="number" min="1" max="5" readonly></div>
+        <div class="field"><label>Tilawah</label><select id="yTilawah"></select></div>
+        <div class="field"><label>Qiyamul Lail</label><select id="yQiyamul"></select></div>
+        <div class="field"><label>Sholat</label><select id="ySholat"></select></div>
+        <div class="field"><label>Puasa</label><select id="yPuasa"></select></div>
+        <div class="field"><label>Olahraga</label><select id="yOlahraga"></select></div>
+        <div class="field"><label>IBR</label><select id="yIbr"></select></div>
+      </div>
+      <div class="actions" style="margin-top:12px"><button onclick="saveYaumiyah()">Simpan</button><button class="light" onclick="closeMemberForm()">Tutup</button></div>
+      <div id="memberFormStatus" class="status"></div>
+    </div>
+  </div>
+
+  <div id="secretaryApp" class="hidden">
+    <div class="card">
+      <div class="actions" style="justify-content:space-between">
+        <div><h2 id="secretaryTitle">Sekretaris Kelas</h2><div id="secretaryIdentity" class="muted"></div></div>
+        <button class="light" onclick="location.reload()">Keluar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="field w3"><label>Bulan</label><select id="secMonth"></select></div>
+        <div class="field w3"><label>Tahun</label><input id="secYear" type="number"></div>
+        <div class="field w3"><label>Pekan</label><select id="secWeek"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+        <div class="field w3"><button onclick="loadSecretaryReport()">Muat</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Laporan Pelaksanaan Kelas</h3>
+      <div class="row">
+        <div class="field w6"><label>Bentuk Pelaksanaan</label><select id="secExecution"></select></div>
+        <div class="field w3"><label>Tanggal</label><input id="secDate" type="date"></div>
+        <div class="field w3"><label>Kehadiran Naqib</label><select id="secNaqib"></select></div>
+        <div class="field w3"><label>Jam Mulai</label><input id="secStart" type="time"></div>
+        <div class="field w3"><label>Jam Selesai</label><input id="secEnd" type="time"></div>
+      </div>
+      <h3 style="margin-top:16px">Agenda Wajib Pekanan</h3><div id="weeklyAgenda" class="checkgrid"></div>
+      <h3 style="margin-top:16px">LU Pekan ke-4</h3><div id="luAgenda" class="checkgrid"></div>
+      <div class="field w6" style="margin-top:10px"><label>LU Lainnya</label><input id="secLuOther"></div>
+      <h3 style="margin-top:16px">Agenda Wajib Bulanan</h3><div id="monthlyAgenda" class="checkgrid"></div>
+      <h3 style="margin-top:16px">Kehadiran Anggota</h3>
+      <div class="table-wrap"><table><thead><tr><th>Nopung</th><th>Nama</th><th>Status Kehadiran</th></tr></thead><tbody id="secAttendance"></tbody></table></div>
+      <div class="actions" style="margin-top:12px"><button onclick="saveSecretaryReport()">Simpan Laporan</button></div>
+      <div id="secretaryStatus" class="status"></div>
+    </div>
+  </div>
+
+  <div id="walasApp" class="hidden">
+    <div class="card">
+      <div class="actions" style="justify-content:space-between">
+        <div><h2 id="walasTitle">Walas</h2><div class="muted">Monitoring gabungan Yaumiyah + laporan Sekretaris</div></div>
+        <div class="actions"><a class="btn" href="./" target="_blank">Evaluasi Walas Lengkap</a><button class="light" onclick="location.reload()">Keluar</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Bulan</label><select id="walasMonth"></select></div>
+        <div class="field"><label>Tahun</label><input id="walasYear" type="number"></div>
+        <div class="field"><button onclick="loadWalasMonitor()">Muat Monitoring</button></div>
+      </div>
+      <div id="walasStatus" class="status"></div>
+    </div>
+    <div class="card">
+      <h3>Laporan Kelas Pekanan</h3>
+      <div class="table-wrap"><table><thead><tr><th>Pekan</th><th>Status</th><th>Bentuk Pelaksanaan</th></tr></thead><tbody id="walasReports"></tbody></table></div>
+      <h3 style="margin-top:16px">Kelengkapan Yaumiyah Anggota</h3>
+      <div class="table-wrap"><table><thead><tr><th>Nopung</th><th>Nama</th><th>Status</th><th>Akun Yaumiyah</th><th>Pekan Terisi</th></tr></thead><tbody id="walasMembers"></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="adminApp" class="hidden">
+    <div class="card">
+      <div class="actions" style="justify-content:space-between">
+        <div><h2 id="adminTitle">Admin</h2><div class="muted">Dashboard integrasi</div></div>
+        <div class="actions"><a class="btn" href="./" target="_blank">Admin Portal Walas Lengkap</a><button class="light" onclick="location.reload()">Keluar</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="field"><label>Bulan</label><select id="adminMonth"></select></div>
+        <div class="field"><label>Tahun</label><input id="adminYear" type="number"></div>
+        <div class="field"><button onclick="loadAdminDashboard()">Muat Dashboard</button></div>
+      </div>
+      <div id="adminStatus" class="status"></div>
+    </div>
+    <div class="card">
+      <h3>Monitoring Seluruh Kelas</h3>
+      <div class="table-wrap"><table><thead><tr><th>Kelas</th><th>Walas</th><th>Anggota Aktif</th><th>Akun Yaumiyah</th><th>Pengisi Yaumiyah</th><th>Laporan Sekretaris</th><th>Sekretaris</th></tr></thead><tbody id="adminMatrix"></tbody></table></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Aktifkan / Reset Sekretaris</h3>
+        <div class="field"><label>Kelas</label><select id="adminSecClass"></select></div>
+        <div class="field" style="margin-top:10px"><label>Nopung Sekretaris</label><input id="adminSecNopung" maxlength="7"></div>
+        <div style="margin-top:10px"><button onclick="configureSecretary()">Generate PIN Sekretaris</button></div>
+        <div id="adminSecStatus" class="status"></div>
+      </div>
+      <div class="card">
+        <h3>Aktifkan / Reset Akun Yaumiyah</h3>
+        <div class="field"><label>Kelas</label><select id="adminMemberClass"></select></div>
+        <div class="field" style="margin-top:10px"><label>Nopung</label><input id="adminMemberNopung" maxlength="7"></div>
+        <div class="field" style="margin-top:10px"><label>Email (opsional)</label><input id="adminMemberEmail" type="email"></div>
+        <div style="margin-top:10px"><button onclick="activateMember()">Generate PIN Anggota</button></div>
+        <div id="adminMemberStatus" class="status"></div>
+      </div>
+    </div>
+    <div class="note">Versi uji ini belum mengirim PIN via email otomatis. PIN sementara ditampilkan sekali kepada Admin setelah generate/reset.</div>
+  </div>
+</div>
+<script type="module" src="./integrated.js"></script>
+</body>
+</html>
