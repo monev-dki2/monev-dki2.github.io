@@ -12,6 +12,7 @@
     const c=await clientPromise;
     const {data,error}=await c.rpc(name,args);
     if(error) throw new Error(error.message||String(error));
+    if(data && data.ok === false) throw new Error(data.error || 'Akses ditolak.');
     return data;
   }
 
