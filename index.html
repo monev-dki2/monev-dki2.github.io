@@ -667,6 +667,32 @@ function refreshFacultySelectOptions(){
   });
 }
 
+function renderWalasPeriodHistory(rows){
+  const tb=document.querySelector('#walasPeriodHistoryTable tbody');
+  if(!tb) return;
+  tb.innerHTML='';
+  const data=Array.isArray(rows)?rows:[];
+  if(!data.length){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="4" class="muted" style="text-align:center">Belum ada riwayat evaluasi.</td>';
+    tb.appendChild(tr);
+    return;
+  }
+  data.forEach(r=>{
+    const tr=document.createElement('tr');
+    const month=String(r.month||'');
+    const year=Number(r.year||0);
+    tr.innerHTML=`
+      <td data-label="Periode">${esc(r.period||'-')}</td>
+      <td data-label="Terevaluasi" style="text-align:center">${esc(r.evaluated==null?'0':r.evaluated)}</td>
+      <td data-label="Terakhir Diubah">${esc(r.updatedAt||'-')}</td>
+      <td data-label="Aksi"><button class="ghost" type="button">Buka</button></td>`;
+    const btn=tr.querySelector('button');
+    btn.addEventListener('click',()=>openWalasHistoryPeriod(month,year));
+    tb.appendChild(tr);
+  });
+}
+
 function loadWalasSupportingData(force){
   if(!WALAS_TOKEN)return;
   if(WALAS_SUPPORT_LOADED && !force)return;
