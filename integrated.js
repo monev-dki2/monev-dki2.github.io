@@ -121,12 +121,46 @@ window.secretaryLogin=async function(){
 }
 window.loadSecretaryReport=async function(){
  clearStatus('secretaryStatus');try{
-  secretaryData=await rpc('secretary_get_report_v2',{p_token:secretaryToken,p_year:Number(document.getElementById('secYear').value),p_month:document.getElementById('secMonth').value,p_week:Number(document.getElementById('secWeek').value)});
-  document.getElementById('secExecution').value=secretaryData.executionType||EXEC[0];document.getElementById('secDate').value=secretaryData.executionDate||'';
-  document.getElementById('secStart').value=(secretaryData.startTime||'').slice(0,5);document.getElementById('secEnd').value=(secretaryData.endTime||'').slice(0,5);
-  document.getElementById('secNaqib').value=secretaryData.naqibAttendance||NAQIB[0];document.getElementById('secLuOther').value=secretaryData.luOther||'';
-  setChecks('wa',secretaryData.weeklyAgendas);setChecks('lu',secretaryData.luWeek4);setChecks('ma',secretaryData.monthlyAgendas);
-  document.getElementById('secAttendance').innerHTML=(secretaryData.members||[]).map(m=>`<tr><td>${esc(m.nopung)}</td><td>${esc(m.nama)}</td><td><select data-att="${esc(m.nopung)}">${ATT.map(v=>`<option${v===m.status?' selected':''}>${esc(v)}</option>`).join('')}</select></td></tr>`).join('');
+  secretaryData=await rpc('secretary_get_report_v2',{
+    p_token:secretaryToken,
+    p_year:Number(document.getElementById('secYear').value),
+    p_month:document.getElementById('secMonth').value,
+    p_week:Number(document.getElementById('secWeek').value)
+  });
+  const secWeek=document.getElementById('secWeek');
+  if(Array.isArray(secretaryData.ranges)){
+    secWeek.innerHTML=secretaryData.ranges.map(r=>{
+      const label=`Pekan ${r.week} — ${r.label}`;
+      return `<option value="${r.week}"${Number(r.week)===Number(secretaryData.week)?' selected':''}>${esc(label)}</option>`;
+    }).join('');
+  }
+  const info=document.getElementById('secretaryPeriodInfo');
+  let stateText='';
+  if(secretaryData.state==='current') stateText='Pekan berjalan';
+  else if(secretaryData.state==='future') stateText='Belum berjalan — terkunci';
+  else if(secretaryData.state==='closed') stateText='Periode arsip — read-only';
+  else stateText='Pekan sudah berjalan';
+  info.textContent=`Pekan ${secretaryData.week}: ${secretaryData.weekLabel||''} • ${stateText}`;
+
+  document.getElementById('secExecution').value=secretaryData.executionType||EXEC[0];
+  document.getElementById('secDate').value=secretaryData.executionDate||'';
+  document.getElementById('secStart').value=(secretaryData.startTime||'').slice(0,5);
+  document.getElementById('secEnd').value=(secretaryData.endTime||'').slice(0,5);
+  document.getElementById('secNaqib').value=secretaryData.naqibAttendance||NAQIB[0];
+  document.getElementById('secLuOther').value=secretaryData.luOther||'';
+  setChecks('wa',secretaryData.weeklyAgendas);
+  setChecks('lu',secretaryData.luWeek4);
+  setChecks('ma',secretaryData.monthlyAgendas);
+
+  const editable=!!secretaryData.canEdit;
+  ['secExecution','secDate','secStart','secEnd','secNaqib','secLuOther'].forEach(id=>document.getElementById(id).disabled=!editable);
+  document.querySelectorAll('#weeklyAgenda input,#luAgenda input,#monthlyAgenda input').forEach(x=>x.disabled=!editable);
+
+  document.getElementById('secAttendance').innerHTML=(secretaryData.members||[]).map(m=>
+    `<tr><td>${esc(m.nopung)}</td><td>${esc(m.nama)}</td><td><select data-att="${esc(m.nopung)}" ${editable?'':'disabled'}>${ATT.map(v=>`<option${v===m.status?' selected':''}>${esc(v)}</option>`).join('')}</select></td></tr>`
+  ).join('');
+  const saveBtn=document.querySelector('#secretaryApp button[onclick="saveSecretaryReport()"]');
+  if(saveBtn) saveBtn.classList.toggle('hidden',!editable);
  }catch(e){status('secretaryStatus',e.message,false)}
 }
 window.saveSecretaryReport=async function(){
@@ -151,9 +185,26 @@ window.walasLogin=async function(){
 }
 window.loadWalasMonitor=async function(){
  clearStatus('walasStatus');try{
-  const d=await rpc('walas_integrated_monitor_v2',{p_token:walasToken,p_year:Number(document.getElementById('walasYear').value),p_month:document.getElementById('walasMonth').value});
-  document.getElementById('walasReports').innerHTML=(d.classReports||[]).map(r=>`<tr><td>Pekan ${r.week}</td><td>${r.reported?'✓ Sudah':'Belum'}</td><td>${esc(r.executionType||'—')}</td></tr>`).join('');
-  document.getElementById('walasMembers').innerHTML=(d.members||[]).map(m=>`<tr><td>${esc(m.nopung)}</td><td>${esc(m.nama)}</td><td>${esc(m.status)}</td><td>${m.account_active?'✓ Aktif':'Belum'}</td><td>${m.yaumiyah_filled}/5</td></tr>`).join('');
+  const d=await rpc('walas_integrated_monitor_v2',{
+    p_token:walasToken,
+    p_year:Number(document.getElementById('walasYear').value),
+    p_month:document.getElementById('walasMonth').value
+  });
+  document.getElementById('walasReports').innerHTML=(d.classReports||[]).map(r=>{
+    let st=r.reported?'✓ Sudah dilaporkan':'Belum dilaporkan';
+    if(r.state==='current') st+=' • Pekan berjalan';
+    else if(r.state==='future') st+=' • Belum berjalan';
+    else if(r.state==='closed') st+=' • Arsip';
+    return `<tr>
+      <td><b>Pekan ${r.week}</b><br><span class="muted">${esc(r.label||'')}</span></td>
+      <td>${esc(st)}</td>
+      <td>${esc(r.executionType||'—')}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('walasMembers').innerHTML=(d.members||[]).map(m=>
+    `<tr><td>${esc(m.nopung)}</td><td>${esc(m.nama)}</td><td>${esc(m.status)}</td>
+     <td>${m.account_active?'✓ Aktif':'Belum'}</td><td>${m.yaumiyah_filled}/5</td></tr>`
+  ).join('');
  }catch(e){status('walasStatus',e.message,false)}
 }
 
