@@ -47,6 +47,24 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       </div>
       <div style="margin-top:10px"><button onclick="memberLogin()">Masuk</button></div>
       <div id="memberLoginStatus" class="status"></div>
+
+      <div style="margin-top:12px"><button class="light" onclick="toggleAccountRequest('member')">Buat Akun / Minta Aktivasi</button></div>
+      <div id="memberRequestBox" class="hidden" style="margin-top:14px;padding-top:12px;border-top:1px solid #dbe6e5">
+        <h3 style="margin-top:0">Aktivasi Akun Yaumiyah</h3>
+        <div class="row">
+          <div class="field"><label>Kelas</label><select id="memberReqClass"></select></div>
+          <div class="field"><label>Nopung</label><input id="memberReqNopung" maxlength="7" inputmode="numeric"></div>
+          <div class="field"><label>Email</label><input id="memberReqEmail" type="email" placeholder="nama@email.com"></div>
+        </div>
+        <div style="margin-top:10px"><button onclick="requestAccount('member')">Kirim Kode Verifikasi</button></div>
+        <div id="memberReqStatus" class="status"></div>
+        <div id="memberVerifyBox" class="hidden" style="margin-top:10px">
+          <div class="row">
+            <div class="field"><label>Kode 6 Digit</label><input id="memberReqCode" maxlength="6" inputmode="numeric"></div>
+            <div class="field"><button onclick="verifyAccountRequest('member')">Verifikasi Email</button></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="loginSecretary" class="hidden" style="margin-top:16px">
@@ -57,6 +75,24 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       </div>
       <div style="margin-top:10px"><button onclick="secretaryLogin()">Masuk</button></div>
       <div id="secretaryLoginStatus" class="status"></div>
+
+      <div style="margin-top:12px"><button class="light" onclick="toggleAccountRequest('secretary')">Minta Akses Sekretaris</button></div>
+      <div id="secretaryRequestBox" class="hidden" style="margin-top:14px;padding-top:12px;border-top:1px solid #dbe6e5">
+        <h3 style="margin-top:0">Permintaan Akses Sekretaris Kelas</h3>
+        <div class="row">
+          <div class="field"><label>Kelas</label><select id="secretaryReqClass"></select></div>
+          <div class="field"><label>Nopung</label><input id="secretaryReqNopung" maxlength="7" inputmode="numeric"></div>
+          <div class="field"><label>Email</label><input id="secretaryReqEmail" type="email" placeholder="nama@email.com"></div>
+        </div>
+        <div style="margin-top:10px"><button onclick="requestAccount('secretary')">Kirim Kode Verifikasi</button></div>
+        <div id="secretaryReqStatus" class="status"></div>
+        <div id="secretaryVerifyBox" class="hidden" style="margin-top:10px">
+          <div class="row">
+            <div class="field"><label>Kode 6 Digit</label><input id="secretaryReqCode" maxlength="6" inputmode="numeric"></div>
+            <div class="field"><button onclick="verifyAccountRequest('secretary')">Verifikasi Email</button></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="loginWalas" class="hidden" style="margin-top:16px">
@@ -193,27 +229,25 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       <h3>Monitoring Seluruh Kelas</h3>
       <div class="table-wrap"><table><thead><tr><th>Kelas</th><th>Walas</th><th>Anggota Aktif</th><th>Akun Yaumiyah</th><th>Pengisi Yaumiyah</th><th>Laporan Sekretaris</th><th>Sekretaris</th></tr></thead><tbody id="adminMatrix"></tbody></table></div>
     </div>
-    <div class="grid2">
-      <div class="card">
-        <h3>Aktifkan / Reset Sekretaris</h3>
-        <div class="field"><label>Kelas</label><select id="adminSecClass"></select></div>
-        <div class="field" style="margin-top:10px"><label>Nopung Sekretaris</label><input id="adminSecNopung" maxlength="7"></div>
-        <div class="field" style="margin-top:10px"><label>Email Sekretaris</label><input id="adminSecEmail" type="email" required placeholder="nama@email.com"></div>
-<div style="margin-top:10px"><button onclick="configureSecretary()">Kirim PIN Sekretaris via Email</button></div>
-        <div id="adminSecStatus" class="status"></div>
+    <div class="card">
+      <div class="actions" style="justify-content:space-between;align-items:center">
+        <div>
+          <h3 style="margin-bottom:4px">Permintaan Akun</h3>
+          <div class="muted">Hanya email yang sudah terverifikasi yang muncul di sini.</div>
+        </div>
+        <button class="light" onclick="loadAccountRequests()">Muat Ulang</button>
       </div>
-      <div class="card">
-        <h3>Aktifkan / Reset Akun Yaumiyah</h3>
-        <div class="field"><label>Kelas</label><select id="adminMemberClass"></select></div>
-        <div class="field" style="margin-top:10px"><label>Nopung</label><input id="adminMemberNopung" maxlength="7"></div>
-        <div class="field" style="margin-top:10px"><label>Email Anggota</label><input id="adminMemberEmail" type="email" required placeholder="nama@email.com"></div>
-        <div style="margin-top:10px"><button onclick="activateMember()">Kirim PIN Anggota via Email</button></div>
-        <div id="adminMemberStatus" class="status"></div>
+      <div id="adminRequestStatus" class="status"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Jenis</th><th>Nama</th><th>Kelas</th><th>Nopung</th><th>Email</th><th>Waktu</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="adminRequestRows"></tbody>
+        </table>
       </div>
     </div>
-    <div class="note">PIN sementara dikirim otomatis ke email penerima melalui layanan email server-side. PIN tidak ditampilkan di layar Admin.</div>
+    <div class="note">Admin tidak mengetik email dan tidak melihat PIN. Pemohon memverifikasi email sendiri; setelah disetujui, PIN sementara dikirim otomatis oleh server.</div>
   </div>
 </div>
-<script type="module" src="./integrated.js?v=20261119-mail1"></script>
+<script type="module" src="./integrated.js?v=20261119-request1"></script>
 </body>
 </html>

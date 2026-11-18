@@ -17,7 +17,7 @@ const YOPT={
  olahraga:['Hijau > 1x','Kuning 1x','Merah 0x'],
  ibr:['Lunas','Belum Lunas']
 };
-let classes=[], memberToken='', secretaryToken='', walasToken='', adminToken='', memberData=null, secretaryData=null, walasClass='';
+let classes=[], memberToken='', secretaryToken='', walasToken='', adminToken='', memberData=null, secretaryData=null, walasClass='', accountRequestIds={member:null,secretary:null};
 
 function status(id,msg,ok=true){const e=document.getElementById(id);e.textContent=msg;e.className='status '+(ok?'ok':'err');}
 function clearStatus(id){const e=document.getElementById(id);e.textContent='';e.className='status';}
@@ -36,7 +36,7 @@ async function init(){
  try{
    classes=await rpc('legacy_public_classes');
    const vals=classes.map(x=>x.kelas);
-   ['memberClass','secretaryClass','walasClass','adminSecClass','adminMemberClass'].forEach(id=>fillSelect(id,vals));
+   ['memberClass','secretaryClass','walasClass','memberReqClass','secretaryReqClass'].forEach(id=>fillSelect(id,vals));
    MONTHS.forEach(()=>{});
    ['memberMonth','secMonth','walasMonth','adminMonth'].forEach(id=>fillSelect(id,MONTHS,MONTHS[new Date().getMonth()]));
    const y=new Date().getFullYear();
@@ -50,6 +50,59 @@ async function init(){
 function renderChecks(holder,prefix,arr){document.getElementById(holder).innerHTML=arr.map((v,i)=>`<label class="check"><input type="checkbox" data-group="${prefix}" value="${esc(v)}"> ${esc(v)}</label>`).join('')}
 function checked(group){return [...document.querySelectorAll(`input[data-group="${group}"]:checked`)].map(x=>x.value)}
 function setChecks(group,vals){const s=new Set(vals||[]);document.querySelectorAll(`input[data-group="${group}"]`).forEach(x=>x.checked=s.has(x.value));}
+
+
+window.toggleAccountRequest=function(type){
+ const box=document.getElementById(type==='member'?'memberRequestBox':'secretaryRequestBox');
+ box.classList.toggle('hidden');
+}
+
+async function callEdge(name,payload){
+ const res=await fetch(`${SUPABASE_URL}/functions/v1/${name}`,{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify(payload)
+ });
+ let data={};
+ try{data=await res.json()}catch(_){}
+ if(!res.ok||data.ok===false) throw new Error(data.error||`Permintaan gagal (${res.status}).`);
+ return data;
+}
+
+window.requestAccount=async function(type){
+ const isMember=type==='member';
+ const prefix=isMember?'member':'secretary';
+ const statusId=isMember?'memberReqStatus':'secretaryReqStatus';
+ clearStatus(statusId);
+ try{
+   const d=await callEdge('request-account-access',{
+     request_type:type,
+     class_code:document.getElementById(prefix+'ReqClass').value,
+     nopung:document.getElementById(prefix+'ReqNopung').value,
+     email:document.getElementById(prefix+'ReqEmail').value.trim()
+   });
+   accountRequestIds[type]=d.request_id;
+   document.getElementById(prefix+'VerifyBox').classList.remove('hidden');
+   status(statusId,d.message||'Kode verifikasi telah dikirim ke email.',true);
+ }catch(e){status(statusId,e.message,false)}
+}
+
+window.verifyAccountRequest=async function(type){
+ const isMember=type==='member';
+ const prefix=isMember?'member':'secretary';
+ const statusId=isMember?'memberReqStatus':'secretaryReqStatus';
+ clearStatus(statusId);
+ try{
+   const requestId=accountRequestIds[type];
+   if(!requestId) throw new Error('Kirim kode verifikasi terlebih dahulu.');
+   const d=await rpc('verify_account_request_v2',{
+     p_request_id:requestId,
+     p_code:document.getElementById(prefix+'ReqCode').value.trim()
+   });
+   status(statusId,d.message||'Email berhasil diverifikasi dan menunggu persetujuan Admin.',true);
+   document.getElementById(prefix+'VerifyBox').classList.add('hidden');
+ }catch(e){status(statusId,e.message,false)}
+}
 
 window.memberLogin=async function(){
  clearStatus('memberLoginStatus'); try{
@@ -212,7 +265,7 @@ window.adminLogin=async function(){
  clearStatus('adminLoginStatus');try{
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
   adminToken=d.token;document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
-  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();
+  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
 window.loadAdminDashboard=async function(){
@@ -221,46 +274,47 @@ window.loadAdminDashboard=async function(){
   document.getElementById('adminMatrix').innerHTML=(d.classes||[]).map(r=>`<tr><td><b>${esc(r.kelas)}</b></td><td>${esc(r.walas)}</td><td>${r.anggota_aktif}</td><td>${r.akun_yaumiyah}</td><td>${r.pengisi_yaumiyah}</td><td>${r.laporan_sekretaris}/5</td><td>${r.sekretaris_aktif?'✓ '+esc(r.sekretaris):'Belum'}</td></tr>`).join('');
  }catch(e){status('adminStatus',e.message,false)}
 }
-async function sendAccessEmail(payload){
- const res=await fetch(`${SUPABASE_URL}/functions/v1/send-access-email`,{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify(payload)
- });
- let data={};
- try{data=await res.json()}catch(_){}
- if(!res.ok||data.ok===false) throw new Error(data.error||`Pengiriman email gagal (${res.status}).`);
- return data;
+
+
+window.loadAccountRequests=async function(){
+ clearStatus('adminRequestStatus');
+ try{
+   const d=await rpc('admin_account_requests_v2',{p_admin_token:adminToken});
+   const rows=d.requests||[];
+   document.getElementById('adminRequestRows').innerHTML=rows.length?rows.map(r=>{
+     const jenis=r.requestType==='secretary'?'Sekretaris':'Anggota';
+     const st=r.status==='delivery_failed'?'Email PIN gagal — kirim ulang':'Menunggu persetujuan';
+     const when=r.verifiedAt?new Date(r.verifiedAt).toLocaleString('id-ID'):new Date(r.requestedAt).toLocaleString('id-ID');
+     return `<tr>
+       <td>${esc(jenis)}</td><td>${esc(r.nama)}</td><td>${esc(r.kelas)}</td><td>${esc(r.nopung)}</td>
+       <td>${esc(r.emailMasked)}</td><td>${esc(when)}</td><td>${esc(st)}</td>
+       <td>
+         <button onclick="approveAccountRequest('${r.id}')">${r.status==='delivery_failed'?'Kirim Ulang':'Setujui'}</button>
+         <button class="light" onclick="rejectAccountRequest('${r.id}')">Tolak</button>
+       </td>
+     </tr>`;
+   }).join(''):`<tr><td colspan="8" class="muted">Tidak ada permintaan yang menunggu persetujuan.</td></tr>`;
+ }catch(e){status('adminRequestStatus',e.message,false)}
 }
 
-window.configureSecretary=async function(){
- clearStatus('adminSecStatus');try{
-  const email=document.getElementById('adminSecEmail').value.trim();
-  if(!email) throw new Error('Email Sekretaris wajib diisi.');
-  const d=await sendAccessEmail({
-    action:'configure_secretary',
-    admin_token:adminToken,
-    class_code:document.getElementById('adminSecClass').value,
-    nopung:document.getElementById('adminSecNopung').value,
-    email
-  });
-  status('adminSecStatus',d.message||'PIN Sekretaris berhasil dikirim ke email.',true);
-  await loadAdminDashboard();
- }catch(e){status('adminSecStatus',e.message,false)}
+window.approveAccountRequest=async function(id){
+ clearStatus('adminRequestStatus');
+ try{
+   const d=await callEdge('approve-account-request',{admin_token:adminToken,request_id:id});
+   status('adminRequestStatus',d.message||'Permintaan disetujui dan PIN dikirim ke email.',true);
+   await loadAccountRequests(); await loadAdminDashboard();
+ }catch(e){status('adminRequestStatus',e.message,false);await loadAccountRequests()}
 }
-window.activateMember=async function(){
- clearStatus('adminMemberStatus');try{
-  const email=document.getElementById('adminMemberEmail').value.trim();
-  if(!email) throw new Error('Email Anggota wajib diisi.');
-  const d=await sendAccessEmail({
-    action:'activate_member',
-    admin_token:adminToken,
-    class_code:document.getElementById('adminMemberClass').value,
-    nopung:document.getElementById('adminMemberNopung').value,
-    email
-  });
-  status('adminMemberStatus',d.message||'PIN Anggota berhasil dikirim ke email.',true);
-  await loadAdminDashboard();
- }catch(e){status('adminMemberStatus',e.message,false)}
+
+window.rejectAccountRequest=async function(id){
+ clearStatus('adminRequestStatus');
+ try{
+   const d=await rpc('admin_reject_account_request_v2',{
+     p_admin_token:adminToken,p_request_id:id,p_note:'Ditolak Admin'
+   });
+   status('adminRequestStatus',d.message||'Permintaan ditolak.',true);
+   await loadAccountRequests();
+ }catch(e){status('adminRequestStatus',e.message,false)}
 }
+
 await init();
