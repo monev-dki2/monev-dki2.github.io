@@ -67,7 +67,7 @@ window.loadMemberDashboard=async function(){
     if(w.done) stateText='✓ Sudah diisi';
     else if(w.state==='current') stateText='Pekan berjalan';
     else if(w.state==='future') stateText='Belum berjalan';
-    else if(w.state==='closed') stateText='Arsip / read-only';
+    else if(w.state==='past') stateText='Periode lampau — dapat diisi/edit';
     else stateText='Belum diisi';
     const badge=w.state==='current'?' <span class="pill">Pekan berjalan</span>':'';
     let action='—';
@@ -80,7 +80,7 @@ window.loadMemberDashboard=async function(){
     const cw=memberData.currentWeek?`Pekan berjalan: P${memberData.currentWeek}. `:'';
     status('memberStatus',`${cw}Pekan yang belum dimulai terkunci otomatis.`,true);
   }else{
-    status('memberStatus','Periode arsip: data hanya dapat dilihat.',true);
+    status('memberStatus','Periode lampau: pengisian dan perbaikan backdate diperbolehkan.',true);
   }
  }catch(e){status('memberStatus',e.message,false)}
 }
@@ -138,7 +138,7 @@ window.loadSecretaryReport=async function(){
   let stateText='';
   if(secretaryData.state==='current') stateText='Pekan berjalan';
   else if(secretaryData.state==='future') stateText='Belum berjalan — terkunci';
-  else if(secretaryData.state==='closed') stateText='Periode arsip — read-only';
+  else if(secretaryData.state==='past') stateText='Periode lampau — dapat diisi/edit';
   else stateText='Pekan sudah berjalan';
   info.textContent=`Pekan ${secretaryData.week}: ${secretaryData.weekLabel||''} • ${stateText}`;
 
@@ -194,7 +194,7 @@ window.loadWalasMonitor=async function(){
     let st=r.reported?'✓ Sudah dilaporkan':'Belum dilaporkan';
     if(r.state==='current') st+=' • Pekan berjalan';
     else if(r.state==='future') st+=' • Belum berjalan';
-    else if(r.state==='closed') st+=' • Arsip';
+    else if(r.state==='past') st+=' • Periode lampau';
     return `<tr>
       <td><b>Pekan ${r.week}</b><br><span class="muted">${esc(r.label||'')}</span></td>
       <td>${esc(st)}</td>
