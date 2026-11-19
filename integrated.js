@@ -63,6 +63,20 @@ window.toggleAccountRequest=function(type){
  box.classList.toggle('hidden');
 }
 
+function safeActivationError(message,type){
+ const raw=String(message||'');
+ if(type==='secretary' && /Sekretaris|secretary|ditetapkan|Nopung/i.test(raw)){
+   return 'Akses Sekretaris tidak tersedia untuk data tersebut.';
+ }
+ if(/anggota aktif|tidak ditemukan|Data tidak sesuai|Nopung/i.test(raw)){
+   return 'Data tidak sesuai atau akses belum tersedia. Silakan periksa kembali Kelas dan Nopung.';
+ }
+ if(/provider|RESEND|MAIL_FROM|email provider|Layanan email|aktivasi belum tersedia/i.test(raw)){
+   return 'Layanan aktivasi belum tersedia. Silakan hubungi Admin.';
+ }
+ return raw || 'Permintaan belum dapat diproses.';
+}
+
 async function callEdge(name,payload){
  const res=await fetch(`${SUPABASE_URL}/functions/v1/${name}`,{
    method:'POST',
@@ -90,7 +104,7 @@ window.requestAccount=async function(type){
    accountRequestIds[type]=d.request_id;
    document.getElementById(prefix+'VerifyBox').classList.remove('hidden');
    status(statusId,d.message||'Kode verifikasi telah dikirim ke email.',true);
- }catch(e){status(statusId,e.message,false)}
+ }catch(e){status(statusId,safeActivationError(e.message,type),false)}
 }
 
 window.verifyAccountRequest=async function(type){
@@ -272,7 +286,7 @@ window.adminLogin=async function(){
  clearStatus('adminLoginStatus');try{
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
   adminToken=d.token;document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
-  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();loadSecretaryCandidates();
+  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();loadSecretaryCandidates();
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
 window.loadAdminDashboard=async function(){
