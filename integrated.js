@@ -129,7 +129,7 @@ window.verifyAccountRequest=async function(type){
 window.memberLogin=async function(){
  clearStatus('memberLoginStatus'); try{
   const d=await rpc('member_login_v2',{p_class:document.getElementById('memberClass').value,p_nopung:document.getElementById('memberNopung').value,p_pin:document.getElementById('memberPin').value});
-  memberToken=d.token; document.getElementById('loginCard').classList.add('hidden');const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('memberApp').classList.remove('hidden');
+  memberToken=d.token; (()=>{const e=document.getElementById('loginCard');if(e)e.classList.add('hidden')})();const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('memberApp').classList.remove('hidden');
   document.getElementById('memberTitle').textContent='Yaumiyah — '+d.nama;document.getElementById('memberIdentity').textContent=d.kelas+' | '+d.nopung; loadMemberDashboard();
  }catch(e){status('memberLoginStatus',e.message,false)}
 }
@@ -189,7 +189,7 @@ window.saveYaumiyah=async function(){
 window.secretaryLogin=async function(){
  clearStatus('secretaryLoginStatus');try{
   const d=await rpc('secretary_login_v2',{p_class:document.getElementById('secretaryClass').value,p_pin:document.getElementById('secretaryPin').value});
-  secretaryToken=d.token;document.getElementById('loginCard').classList.add('hidden');const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('secretaryApp').classList.remove('hidden');
+  secretaryToken=d.token;(()=>{const e=document.getElementById('loginCard');if(e)e.classList.add('hidden')})();const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('secretaryApp').classList.remove('hidden');
   document.getElementById('secretaryTitle').textContent='Sekretaris Kelas '+d.kelas;document.getElementById('secretaryIdentity').textContent=d.nama+(d.nopung?' | '+d.nopung:'');
   loadSecretaryReport();
  }catch(e){status('secretaryLoginStatus',e.message,false)}
@@ -256,7 +256,7 @@ window.walasLogin=async function(){
   const d=await rpc('legacy_walas_login',{p_class:document.getElementById('walasClass').value,p_pin:document.getElementById('walasPin').value});
   walasToken=d.token;walasClass=d.kelas;
   sessionStorage.setItem('dki2_unified_walas_session',JSON.stringify(d));
-  document.getElementById('loginCard').classList.add('hidden');const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('walasApp').classList.remove('hidden');
+  (()=>{const e=document.getElementById('loginCard');if(e)e.classList.add('hidden')})();const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('walasApp').classList.remove('hidden');
   document.getElementById('walasTitle').textContent='Walas '+d.kelas+(d.walas?' — '+d.walas:'');loadWalasMonitor();
  }catch(e){status('walasLoginStatus',e.message,false)}
 }
@@ -504,7 +504,7 @@ function resumeUnifiedSession(){
       const d=JSON.parse(raw);
       if(!d?.token||!d?.kelas) return;
       walasToken=d.token;walasClass=d.kelas;
-      document.getElementById('loginCard').classList.add('hidden');
+      (()=>{const e=document.getElementById('loginCard');if(e)e.classList.add('hidden')})();
       const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');
       document.getElementById('walasApp').classList.remove('hidden');
       document.getElementById('walasTitle').textContent='Walas '+d.kelas+(d.walas?' — '+d.walas:'');
