@@ -19,10 +19,10 @@ const YOPT={
 };
 let classes=[], memberToken='', secretaryToken='', walasToken='', adminToken='', memberData=null, secretaryData=null, walasClass='', accountRequestIds={member:null,secretary:null};
 
-function status(id,msg,ok=true){const e=document.getElementById(id);e.textContent=msg;e.className='status '+(ok?'ok':'err');}
-function clearStatus(id){const e=document.getElementById(id);e.textContent='';e.className='status';}
+function status(id,msg,ok=true){const e=document.getElementById(id);if(!e)return;e.textContent=msg;e.className='status '+(ok?'ok':'err');}
+function clearStatus(id){const e=document.getElementById(id);if(!e)return;e.textContent='';e.className='status';}
 async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw new Error(error.message||String(error));if(data&&data.ok===false)throw new Error(data.error||'Akses ditolak.');return data;}
-function fillSelect(id,vals,selected=''){const e=document.getElementById(id);e.innerHTML=vals.map(v=>`<option value="${esc(v)}"${v===selected?' selected':''}>${esc(v)}</option>`).join('');}
+function fillSelect(id,vals,selected=''){const e=document.getElementById(id);if(!e)return;e.innerHTML=vals.map(v=>`<option value="${esc(v)}"${v===selected?' selected':''}>${esc(v)}</option>`).join('');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function dot(ok,labelYes='Sudah',labelNo='Belum'){
   return `<span class="status-dot ${ok?'green':'red'}"></span>${ok?labelYes:labelNo}`;
@@ -48,14 +48,14 @@ async function init(){
    MONTHS.forEach(()=>{});
    ['memberMonth','secMonth','walasMonth','adminMonth'].forEach(id=>fillSelect(id,MONTHS,MONTHS[new Date().getMonth()]));
    const y=new Date().getFullYear();
-   ['memberYear','secYear','walasYear','adminYear'].forEach(id=>document.getElementById(id).value=y);
+   ['memberYear','secYear','walasYear','adminYear'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=y;});
    fillSelect('secExecution',EXEC); fillSelect('secNaqib',NAQIB);
    renderChecks('weeklyAgenda','wa',WEEKLY); renderChecks('luAgenda','lu',LU); renderChecks('monthlyAgenda','ma',MONTHLY);
    fillSelect('yTilawah',YOPT.tilawah);fillSelect('yQiyamul',YOPT.qiyamul);fillSelect('ySholat',YOPT.sholat);
    fillSelect('yPuasa',YOPT.puasa);fillSelect('yOlahraga',YOPT.olahraga);fillSelect('yIbr',YOPT.ibr);
  }catch(e){status('memberLoginStatus',e.message,false)}
 }
-function renderChecks(holder,prefix,arr){document.getElementById(holder).innerHTML=arr.map((v,i)=>`<label class="check"><input type="checkbox" data-group="${prefix}" value="${esc(v)}"> ${esc(v)}</label>`).join('')}
+function renderChecks(holder,prefix,arr){const e=document.getElementById(holder);if(!e)return;e.innerHTML=arr.map((v,i)=>`<label class="check"><input type="checkbox" data-group="${prefix}" value="${esc(v)}"> ${esc(v)}</label>`).join('')}
 function checked(group){return [...document.querySelectorAll(`input[data-group="${group}"]:checked`)].map(x=>x.value)}
 function setChecks(group,vals){const s=new Set(vals||[]);document.querySelectorAll(`input[data-group="${group}"]`).forEach(x=>x.checked=s.has(x.value));}
 
@@ -320,7 +320,7 @@ window.adminLogin=async function(){
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
   adminToken=d.token;
   sessionStorage.setItem('dki2_unified_admin_session',JSON.stringify(d));
-  document.getElementById('loginCard').classList.add('hidden');const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
+  const publicLoginCard=document.getElementById('loginCard');if(publicLoginCard)publicLoginCard.classList.add('hidden');const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');const adminApp=document.getElementById('adminApp');if(adminApp)adminApp.classList.remove('hidden');
   document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');switchAdminMenu('monitoring');
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
@@ -483,16 +483,16 @@ window.rejectAccountRequest=async function(id){
 
 function resumeUnifiedSession(){
   const mode=new URLSearchParams(location.search).get('resume');
-  if(mode==='admin'){
+  if(mode==='admin' && document.getElementById('adminApp')){
     try{
       const raw=sessionStorage.getItem('dki2_unified_admin_session');
       if(!raw) return;
       const d=JSON.parse(raw);
       if(!d?.token) return;
       adminToken=d.token;
-      document.getElementById('loginCard').classList.add('hidden');
+      const publicLoginCard=document.getElementById('loginCard');if(publicLoginCard)publicLoginCard.classList.add('hidden');
       const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');
-      document.getElementById('adminApp').classList.remove('hidden');
+      const adminApp=document.getElementById('adminApp');if(adminApp)adminApp.classList.remove('hidden');
       document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');
       switchAdminMenu('monitoring');
     }catch(e){console.error('Gagal memulihkan sesi Admin',e)}
