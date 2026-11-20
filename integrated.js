@@ -449,7 +449,40 @@ window.rejectAccountRequest=async function(id){
  }catch(e){status('adminRequestStatus',e.message,false)}
 }
 
+
+function resumeUnifiedSession(){
+  const mode=new URLSearchParams(location.search).get('resume');
+  if(mode==='admin'){
+    try{
+      const raw=sessionStorage.getItem('dki2_unified_admin_session');
+      if(!raw) return;
+      const d=JSON.parse(raw);
+      if(!d?.token) return;
+      adminToken=d.token;
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('adminApp').classList.remove('hidden');
+      document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');
+      loadAdminDashboard();loadAccountRequests();loadBClassBaseline();
+      if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();
+    }catch(e){console.error('Gagal memulihkan sesi Admin',e)}
+  }
+  if(mode==='walas'){
+    try{
+      const raw=sessionStorage.getItem('dki2_unified_walas_session');
+      if(!raw) return;
+      const d=JSON.parse(raw);
+      if(!d?.token||!d?.kelas) return;
+      walasToken=d.token;walasClass=d.kelas;
+      document.getElementById('loginCard').classList.add('hidden');
+      document.getElementById('walasApp').classList.remove('hidden');
+      document.getElementById('walasTitle').textContent='Walas '+d.kelas+(d.walas?' — '+d.walas:'');
+      loadWalasMonitor();
+    }catch(e){console.error('Gagal memulihkan sesi Walas',e)}
+  }
+}
+
 await init();
+resumeUnifiedSession();
 
 
 window.openFullWalasPortal=function(){
