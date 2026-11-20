@@ -1463,7 +1463,8 @@ function deleteMember(nopung,nama){
 
 <script>
 function backToMonitoring(){
-  location.href='./';
+  const mode=new URLSearchParams(location.search).get('mode');
+  location.href='./'+(mode?'?resume='+encodeURIComponent(mode):'');
 }
 
 function unifiedExit(){
