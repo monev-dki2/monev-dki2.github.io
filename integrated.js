@@ -31,9 +31,11 @@ function weekDot(done){
   return `<span class="status-dot ${done?'green':'red'}"></span>${done?'Sudah':'Belum'}`;
 }
 function setRole(role){
- ['member','secretary','walas','admin'].forEach(r=>{
-   document.getElementById('login'+r[0].toUpperCase()+r.slice(1)).classList.toggle('hidden',r!==role);
-   document.getElementById('tab'+r[0].toUpperCase()+r.slice(1)).classList.toggle('active',r===role);
+ ['member','secretary','walas'].forEach(r=>{
+   const login=document.getElementById('login'+r[0].toUpperCase()+r.slice(1));
+   const tab=document.getElementById('tab'+r[0].toUpperCase()+r.slice(1));
+   if(login) login.classList.toggle('hidden',r!==role);
+   if(tab) tab.classList.toggle('active',r===role);
  });
 }
 window.setRole=setRole;
@@ -318,7 +320,7 @@ window.adminLogin=async function(){
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
   adminToken=d.token;
   sessionStorage.setItem('dki2_unified_admin_session',JSON.stringify(d));
-  document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
+  document.getElementById('loginCard').classList.add('hidden');const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
   document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');switchAdminMenu('monitoring');
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
@@ -489,6 +491,7 @@ function resumeUnifiedSession(){
       if(!d?.token) return;
       adminToken=d.token;
       document.getElementById('loginCard').classList.add('hidden');
+      const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');
       document.getElementById('adminApp').classList.remove('hidden');
       document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');
       switchAdminMenu('monitoring');
