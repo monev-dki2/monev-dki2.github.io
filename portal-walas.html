@@ -93,8 +93,13 @@
 <body>
 <div class="wrap">
   <div class="card">
-    <h1>Portal Evaluasi & Administrasi Kelas</h1>
-<div class="muted">Modul lengkap dalam Portal Monitoring Yaumiyah dan Pelaksanaan Kelas</div>
+    <div class="topbar">
+      <div>
+        <h1>Portal Evaluasi & Administrasi Kelas</h1>
+        <div class="muted">Modul lengkap dalam Portal Monitoring Yaumiyah dan Pelaksanaan Kelas</div>
+      </div>
+      <button class="ghost" onclick="backToMonitoring()">← Kembali ke Monitoring</button>
+    </div>
     <div class="tabs">
       <button id="tabWalas" class="tab active" onclick="switchRole('walas')">Walas</button>
       <button id="tabAdmin" class="tab admin" onclick="switchRole('admin')">Admin</button>
@@ -1457,6 +1462,10 @@ function deleteMember(nopung,nama){
 </script>
 
 <script>
+function backToMonitoring(){
+  location.href='./';
+}
+
 function unifiedExit(){
   try{
     sessionStorage.removeItem('dki2_unified_walas_session');
