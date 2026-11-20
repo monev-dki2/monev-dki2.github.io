@@ -44,7 +44,6 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       <button id="tabMember" class="active" onclick="setRole('member')">Anggota / Yaumiyah</button>
       <button id="tabSecretary" onclick="setRole('secretary')">Sekretaris Kelas</button>
       <button id="tabWalas" onclick="setRole('walas')">Walas</button>
-      <button id="tabAdmin" onclick="setRole('admin')">Admin</button>
     </div>
 
     <div id="loginMember" style="margin-top:16px">
@@ -114,13 +113,19 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       <div id="walasLoginStatus" class="status"></div>
     </div>
 
-    <div id="loginAdmin" class="hidden" style="margin-top:16px">
-      <h2>Login Admin</h2>
+  </div>
+
+  <div id="adminLoginCard" class="card">
+    <div>
+      <h2>Akses Admin</h2>
+      <div class="muted">Akses khusus administrator Portal Monev.</div>
+    </div>
+    <div id="loginAdmin" style="margin-top:16px">
       <div class="row">
         <div class="field w6"><label>Admin ID</label><input id="adminId" value="ADMIN"></div>
         <div class="field w6"><label>PIN Admin</label><input id="adminPin" type="password"></div>
       </div>
-      <div style="margin-top:10px"><button onclick="adminLogin()">Masuk</button></div>
+      <div style="margin-top:10px"><button onclick="adminLogin()">Masuk Admin</button></div>
       <div id="adminLoginStatus" class="status"></div>
     </div>
   </div>
@@ -330,6 +335,6 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
     <div class="note">Admin tidak mengetik email dan tidak melihat PIN. Pemohon memverifikasi email sendiri; setelah disetujui, PIN sementara dikirim otomatis oleh server.</div>
 </div>  </div>
 </div>
-<script type="module" src="./integrated.js?v=20261120-adminmenu1"></script>
+<script type="module" src="./integrated.js?v=20261120-adminlogin2"></script>
 </body>
 </html>
