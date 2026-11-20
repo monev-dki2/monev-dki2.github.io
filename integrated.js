@@ -252,7 +252,9 @@ window.saveSecretaryReport=async function(){
 window.walasLogin=async function(){
  clearStatus('walasLoginStatus');try{
   const d=await rpc('legacy_walas_login',{p_class:document.getElementById('walasClass').value,p_pin:document.getElementById('walasPin').value});
-  walasToken=d.token;walasClass=d.kelas;sessionStorage.setItem('dki2_unified_walas_session',JSON.stringify(d));document.getElementById('loginCard').classList.add('hidden');document.getElementById('walasApp').classList.remove('hidden');
+  walasToken=d.token;walasClass=d.kelas;
+  sessionStorage.setItem('dki2_unified_walas_session',JSON.stringify(d));
+  document.getElementById('loginCard').classList.add('hidden');document.getElementById('walasApp').classList.remove('hidden');
   document.getElementById('walasTitle').textContent='Walas '+d.kelas+(d.walas?' — '+d.walas:'');loadWalasMonitor();
  }catch(e){status('walasLoginStatus',e.message,false)}
 }
@@ -285,8 +287,10 @@ window.loadWalasMonitor=async function(){
 window.adminLogin=async function(){
  clearStatus('adminLoginStatus');try{
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
-  adminToken=d.token;sessionStorage.setItem('dki2_unified_admin_session',JSON.stringify(d));document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
-  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();loadBClassBaseline();if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();loadSecretaryCandidates();
+  adminToken=d.token;
+  sessionStorage.setItem('dki2_unified_admin_session',JSON.stringify(d));
+  document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
+  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();loadBClassBaseline();if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
 window.loadAdminDashboard=async function(){
@@ -369,7 +373,9 @@ window.loadBClassBaseline=async function(){
      <td>${r.attendanceGt80}</td>
      <td>${r.yaumiyahJuly}/${r.yaumiyahAugust}/${r.yaumiyahSeptember}</td>
    </tr>`).join('');
- }catch(e){status('adminBBaselineStatus',e.message,false)}
+ }catch(e){
+   status('adminBBaselineStatus',e.message,false);
+ }
 }
 
 window.loadSecretaryCandidates=async function(){
@@ -445,11 +451,18 @@ window.rejectAccountRequest=async function(id){
 
 await init();
 
+
 window.openFullWalasPortal=function(){
-  if(!walasToken){status('walasStatus','Sesi Walas tidak tersedia. Silakan login kembali.',false);return;}
+  if(!walasToken){
+    status('walasStatus','Sesi Walas tidak tersedia. Silakan login kembali.',false);
+    return;
+  }
   location.href='./portal-walas.html?mode=walas';
 }
 window.openFullAdminPortal=function(){
-  if(!adminToken){status('adminStatus','Sesi Admin tidak tersedia. Silakan login kembali.',false);return;}
+  if(!adminToken){
+    status('adminStatus','Sesi Admin tidak tersedia. Silakan login kembali.',false);
+    return;
+  }
   location.href='./portal-walas.html?mode=admin';
 }

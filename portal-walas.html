@@ -446,7 +446,7 @@
   </div>
 </div>
 
-<script src="compat.js?v=20261120-unified-live1"></script>
+<script src="compat.js?v=20261120-unified1"></script>
 <script>
 let WALAS_TOKEN=null, MEMBERS=[], FACULTY_OPTIONS=[];
 let PROMO_ROWS=[], PROMO_ASSESSMENT=null, WALAS_MODULE='execution';
@@ -571,7 +571,7 @@ function exitWalas(){
   if(ADMIN_PREVIEW_WALAS){
     returnToAdmin();
   }else{
-    location.reload();
+    unifiedExit();
   }
 }
 
@@ -1455,6 +1455,7 @@ function deleteMember(nopung,nama){
     .adminDeleteMember(ADMIN_TOKEN,nopung);
 }
 </script>
+
 <script>
 function unifiedExit(){
   try{
@@ -1463,34 +1464,59 @@ function unifiedExit(){
   }catch(_){}
   location.href='./';
 }
+
 function restoreUnifiedPortalSession(){
   const params=new URLSearchParams(location.search);
   const mode=params.get('mode');
+
   if(mode==='walas'){
     try{
       const raw=sessionStorage.getItem('dki2_unified_walas_session');
       if(!raw) return;
       const res=JSON.parse(raw);
-      if(!res||!res.token||!res.kelas) return;
-      if(!Array.isArray(res.months)||!res.months.length) res.months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      if(!res || !res.token || !res.kelas) return;
+      if(!Array.isArray(res.months) || !res.months.length){
+        res.months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      }
       if(!res.activeYear) res.activeYear=new Date().getFullYear();
       if(!res.activeMonth) res.activeMonth=res.months[new Date().getMonth()];
-      switchRole('walas'); enterWalasApp(res,false); window.scrollTo({top:0}); return;
-    }catch(e){console.error('Gagal memulihkan sesi Walas',e);}
+      switchRole('walas');
+      enterWalasApp(res,false);
+      window.scrollTo({top:0});
+      return;
+    }catch(e){
+      console.error('Gagal memulihkan sesi Walas',e);
+    }
   }
+
   if(mode==='admin'){
     try{
       const raw=sessionStorage.getItem('dki2_unified_admin_session');
       if(!raw) return;
       const res=JSON.parse(raw);
-      if(!res||!res.token) return;
+      if(!res || !res.token) return;
+
       switchRole('admin');
-      ADMIN_TOKEN=res.token; ADMIN_MEMBERS=[]; ADMIN_MEMBERS_LOADED=false; ADMIN_PROMO_LOADED=false; CLASS_OPTIONS=res.classes||[];
+      ADMIN_TOKEN=res.token;
+      ADMIN_MEMBERS=[];
+      ADMIN_MEMBERS_LOADED=false;
+      ADMIN_PROMO_LOADED=false;
+      CLASS_OPTIONS=res.classes||[];
+
       document.getElementById('adminLogin').classList.add('hidden');
       document.getElementById('adminApp').classList.remove('hidden');
       document.getElementById('adminName').textContent='Admin: '+(res.nama||res.adminId||'ADMIN');
-      loadClassSelects(); renderAdminTable(); initAdminPromotionFilters(); loadAdminInitialOverview(); setupAdminLazyLoading(); window.scrollTo({top:0}); return;
-    }catch(e){console.error('Gagal memulihkan sesi Admin',e);}
+
+      loadClassSelects();
+      renderAdminTable();
+      initAdminPromotionFilters();
+      loadAdminInitialOverview();
+      setupAdminLazyLoading();
+      window.scrollTo({top:0});
+      return;
+    }catch(e){
+      console.error('Gagal memulihkan sesi Admin',e);
+    }
   }
 }
 window.addEventListener('DOMContentLoaded',()=>setTimeout(restoreUnifiedPortalSession,0));
