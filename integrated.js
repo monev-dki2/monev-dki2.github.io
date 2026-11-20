@@ -284,13 +284,42 @@ window.loadWalasMonitor=async function(){
  }catch(e){status('walasStatus',e.message,false)}
 }
 
+
+window.switchAdminMenu=function(menu){
+  const map={
+    monitoring:'adminSectionMonitoring',
+    classb:'adminSectionClassB',
+    secretary:'adminSectionSecretary',
+    requests:'adminSectionRequests'
+  };
+  Object.entries(map).forEach(([key,id])=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('hidden',key!==menu);
+  });
+  const tabs={
+    monitoring:'adminMenuMonitoring',
+    classb:'adminMenuClassB',
+    secretary:'adminMenuSecretary',
+    requests:'adminMenuRequests'
+  };
+  Object.entries(tabs).forEach(([key,id])=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('active',key===menu);
+  });
+
+  if(menu==='monitoring') loadAdminDashboard();
+  if(menu==='classb') loadBClassBaseline();
+  if(menu==='secretary' && document.getElementById('adminDesignateClass')) loadSecretaryCandidates();
+  if(menu==='requests') loadAccountRequests();
+}
+
 window.adminLogin=async function(){
  clearStatus('adminLoginStatus');try{
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
   adminToken=d.token;
   sessionStorage.setItem('dki2_unified_admin_session',JSON.stringify(d));
   document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
-  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();loadBClassBaseline();if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();
+  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');switchAdminMenu('monitoring');
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
 window.loadAdminDashboard=async function(){
@@ -462,8 +491,7 @@ function resumeUnifiedSession(){
       document.getElementById('loginCard').classList.add('hidden');
       document.getElementById('adminApp').classList.remove('hidden');
       document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');
-      loadAdminDashboard();loadAccountRequests();loadBClassBaseline();
-      if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();
+      switchAdminMenu('monitoring');
     }catch(e){console.error('Gagal memulihkan sesi Admin',e)}
   }
   if(mode==='walas'){
