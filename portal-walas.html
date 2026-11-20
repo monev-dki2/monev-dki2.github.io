@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --teal:#0f766e; --dark:#064e3b; --soft:#d1fae5; --line:#d5e7e2;
+      --bg:#eef8f6; --warn:#fef3c7; --text:#12302d; --admin:#7c2d12; --danger:#b91c1c;
+    }
+    body{font-family:Arial,sans-serif;background:var(--bg);margin:0;color:var(--text)}
+    .wrap{max-width:1500px;margin:0 auto;padding:22px}
+    .card{background:white;border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.06);padding:20px;margin-bottom:16px}
+    h1{margin:0 0 5px;color:var(--dark);font-size:26px}
+    h2{margin:0 0 14px;color:var(--teal);font-size:20px}
+    .muted{color:#5d7570;font-size:13px}
+    .tabs{display:flex;gap:8px;margin-top:16px}
+    .tab{padding:9px 16px;border:1px solid var(--line);background:white;color:var(--teal);border-radius:10px;font-weight:700;cursor:pointer}
+    .tab.active{background:var(--teal);color:white}
+    .tab.admin.active{background:var(--admin)}
+    label{font-weight:700;font-size:13px;display:block;margin:10px 0 5px}
+    input,textarea,select{box-sizing:border-box;width:100%;border:1px solid #cbdcd8;border-radius:9px;padding:9px;font-size:13px;background:white}
+    textarea{min-height:52px;resize:vertical}
+    button{background:var(--teal);color:white;border:0;border-radius:9px;padding:9px 14px;font-weight:700;cursor:pointer}
+    button.admin{background:var(--admin)}
+    button.secondary{background:#155e75}
+    button.danger{background:var(--danger)}
+    button.ghost{background:#e7f4f1;color:#0f5b55}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .grid3{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-block;background:var(--soft);color:var(--dark);border-radius:999px;padding:6px 10px;font-weight:700;font-size:12px}
+    .pill.admin{background:#ffedd5;color:var(--admin)}
+    table{width:100%;border-collapse:collapse;background:white}
+    th{background:var(--dark);color:white;padding:9px;font-size:12px;text-align:center;position:sticky;top:0;z-index:2}
+    #adminTable th{background:var(--admin)}
+    td{border:1px solid var(--line);padding:7px;vertical-align:top;font-size:12px}
+    td.readonly{background:#f8fbfa;font-weight:700}
+    .statusbox{margin-top:10px;padding:10px;border-radius:10px;display:none}
+    .ok{background:#dcfce7;color:#14532d}
+    .err{background:#fee2e2;color:#7f1d1d}
+    .note{background:var(--warn);border:1px solid #fde68a;border-radius:12px;padding:12px;font-size:13px}
+    .hidden{display:none}
+    .toolbar{display:grid;grid-template-columns:1.3fr 1fr auto;gap:10px;margin:12px 0}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal.show{display:flex}
+    .modal-card{background:white;border-radius:14px;padding:20px;width:min(720px,95vw);max-height:90vh;overflow:auto}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:15px}
+
+    .subcard{border:1px solid var(--line);border-radius:12px;padding:16px;margin:16px 0;background:#fbfefd}
+    .subcard h3{margin:0 0 10px;color:var(--admin);font-size:17px}
+    .stats{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;margin:12px 0}
+    .stat{border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center;background:white}
+    .stat b{display:block;font-size:23px;color:var(--dark)}
+    .class-add-grid{display:grid;grid-template-columns:.7fr 1.2fr 1.4fr auto;gap:10px;align-items:end}
+    .access-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pin-once{background:#dcfce7;color:#14532d;border:1px solid #bbf7d0;border-radius:10px;padding:10px;margin-top:10px;font-weight:700}
+
+    .module-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 16px}
+    .module-tab{background:#e7f4f1;color:#0f5b55;border:1px solid var(--line)}
+    .module-tab.active{background:var(--teal);color:#fff}
+    .promo-kpis{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:10px;margin:12px 0}
+    .promo-kpi{border:1px solid var(--line);border-radius:11px;padding:11px;text-align:center;background:#fff}
+    .promo-kpi b{display:block;font-size:21px;color:var(--dark)}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#edf7f5;color:#0f5b55}
+    .badge.warn{background:#fef3c7;color:#92400e}.badge.done{background:#dcfce7;color:#166534}
+    .badge.danger{background:#fee2e2;color:#991b1b}.badge.locked{background:#e5e7eb;color:#374151}
+    .rubric-item{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;background:#fff}
+    .rubric-title{font-weight:700;color:var(--dark);line-height:1.35}
+    .rubric-code{font-size:11px;color:#64748b;margin-bottom:5px}
+    .rubric-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    .rubric-option{border:1px solid #d8e5e2;border-radius:10px;padding:10px;background:#fbfefd}
+    .rubric-option label{margin:0;font-weight:600;display:flex;gap:8px;align-items:flex-start}
+    .rubric-option input{width:auto;margin-top:2px}
+    .rubric-option small{display:block;color:#526b67;line-height:1.35;margin-top:4px}
+    .dimension-title{margin:18px 0 8px;padding:10px 12px;border-radius:10px;background:#edf7f5;color:var(--dark);font-weight:700}
+    .promo-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .sensitive-box{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px;margin-top:14px}
+    @media(max-width:900px){.promo-kpis,.rubric-options{grid-template-columns:1fr}}
+
+    @media(max-width:900px){
+      .grid3,.grid2,.toolbar,.class-add-grid,.stats{grid-template-columns:1fr}
+      table,thead,tbody,th,td,tr{display:block}
+      thead{display:none}
+      tr{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;background:#fff;overflow:hidden}
+      td{border:0;border-bottom:1px solid var(--line)}
+      td::before{content:attr(data-label);font-weight:700;color:var(--teal);display:block;margin-bottom:4px}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Portal Evaluasi & Administrasi Kelas</h1>
+<div class="muted">Modul lengkap dalam Portal Monitoring Yaumiyah dan Pelaksanaan Kelas</div>
+    <div class="tabs">
+      <button id="tabWalas" class="tab active" onclick="switchRole('walas')">Walas</button>
+      <button id="tabAdmin" class="tab admin" onclick="switchRole('admin')">Admin</button>
+    </div>
+  </div>
+
+  <!-- WALAS -->
+  <div id="walasLogin" class="card">
+    <h2>Login Walas</h2>
+    <div class="grid3">
+      <div><label>Kelas</label><select id="kelas"><option value="">Memuat daftar kelas...</option></select></div>
+      <div><label>PIN Kelas</label><input id="pin" type="password"></div>
+      <button id="loginBtn" onclick="doLogin()">Masuk</button>
+    </div>
+    <div id="loginStatus" class="statusbox"></div>
+  </div>
+
+  <div id="walasApp" class="card hidden">
+    <div class="topbar">
+      <div><h2 id="kelasTitle">Evaluasi Kelas</h2><div class="muted" id="periodText"></div></div>
+      <div class="top-actions"><span class="pill" id="walasText"></span> <span class="pill" id="memberCount"></span>
+        <button id="walasPinBtn" class="ghost" onclick="openWalasPin()">Ganti PIN Saya</button>
+        <button id="returnAdminBtn" class="admin hidden" onclick="returnToAdmin()">Kembali ke Admin</button>
+      </div>
+    </div>
+
+    <div id="adminWalasBanner" class="note hidden" style="margin-bottom:14px">
+      <b>Mode Admin:</b> Anda sedang membuka Portal Walas <span id="adminPreviewClass"></span>.
+      PIN Walas tidak digunakan dan tidak ditampilkan. Jika Anda menyimpan perubahan, tindakan akan tercatat sebagai Admin.
+    </div>
+
+    <div class="module-tabs">
+      <button id="walasModuleExecutionBtn" class="module-tab active" onclick="switchWalasModule('execution')">Evaluasi Anggota</button>
+      <button id="walasModulePromotionBtn" class="module-tab" onclick="switchWalasModule('promotion')">Evaluasi Promosi</button>
+    </div>
+
+    <div id="walasExecutionView">
+    <div class="subcard" id="walasPeriodCard">
+      <div class="topbar">
+        <div>
+          <h3>Periode Evaluasi & Rekap</h3>
+          <div class="muted" id="walasActivePeriodNote"></div>
+        </div>
+        <button class="ghost" onclick="loadWalasPeriod(true)">Refresh</button>
+      </div>
+      <div class="grid3">
+        <div><label>Tahun</label><input id="walasYear" type="number" min="2020" max="2100"></div>
+        <div><label>Bulan</label><select id="walasMonth"></select></div>
+        <button onclick="loadWalasPeriod()">Muat Periode</button>
+      </div>
+      <div class="kpis" style="margin-top:12px">
+        <div class="kpi"><b id="walasKpiTotal">0</b><span>Anggota kelas</span></div>
+        <div class="kpi"><b id="walasKpiDone">0</b><span>Sudah terevaluasi</span></div>
+        <div class="kpi"><b id="walasKpiMissing">0</b><span>Belum terevaluasi</span></div>
+        <div class="kpi"><b id="walasKpiPercent">0%</b><span>Capaian periode</span></div>
+      </div>
+      <div id="walasPeriodInfo" class="note" style="margin-top:12px"></div>
+      <div style="overflow:auto;max-height:220px;margin-top:12px">
+        <table id="walasPeriodHistoryTable">
+          <thead><tr><th>Periode</th><th>Terevaluasi</th><th>Terakhir Diubah</th><th>Aksi</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="walasPeriodStatus" class="statusbox"></div>
+    </div>
+
+    <div class="note">Isian dapat dilakukan sekaligus untuk seluruh anggota. Data TTL dan evaluasi bersifat sensitif.</div>
+    <div id="walasPinCard" class="subcard hidden">
+      <div class="topbar"><div><h3>Ganti PIN Walas</h3><div class="muted">PIN baru minimal 8 karakter dan harus mengandung huruf serta angka.</div></div><button class="ghost" onclick="closeWalasPin()">Tutup</button></div>
+      <div class="grid3">
+        <div><label>PIN Lama</label><input id="walasOldPin" type="password"></div>
+        <div><label>PIN Baru</label><input id="walasNewPin" type="password"></div>
+        <div><label>Ulangi PIN Baru</label><input id="walasConfirmPin" type="password"></div>
+      </div>
+      <br><button onclick="changeWalasPin()">Simpan PIN Baru</button>
+      <div id="walasPinStatus" class="statusbox"></div>
+    </div>
+    <br>
+    <div style="overflow:auto;max-height:70vh">
+      <table id="evalTable">
+        <thead>
+          <tr><th id="evalPeriodHeader" colspan="16">Periode Evaluasi: -</th></tr>
+          <tr>
+          <th>No</th><th>Nopung</th><th>Nama</th><th>Tanggal Lahir</th><th>Tahun Pelantikan</th>
+          <th>Fakultas</th><th>Angkatan</th><th>Keterangan</th>
+          <th>Status</th><th>Amanah DKI2</th><th>Amanah selain DKI2</th><th>Membina</th><th>Jumlah Binaan L1</th><th>Jumlah Binaan L2</th><th>Potensi Promosi</th><th>Catatan Walas</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <br>
+    <button id="saveBtn" onclick="saveAll()">Simpan Evaluasi</button>
+    <button class="secondary" onclick="showResults()">Lihat Hasil Evaluasi</button>
+    <button id="walasExitBtn" class="secondary" onclick="exitWalas()">Keluar</button>
+    <div id="saveStatus" class="statusbox"></div>
+
+    <div id="resultView" class="hidden" style="margin-top:18px">
+      <div class="topbar">
+        <div><h2>Hasil Evaluasi Tersimpan</h2><div class="muted" id="resultPeriodText">Tampilan hanya-baca untuk periode yang dipilih.</div></div>
+        <button class="ghost" onclick="hideResults()">Kembali Edit</button>
+      </div>
+      <div style="overflow:auto;max-height:70vh;margin-top:12px">
+        <table id="resultTable">
+          <thead><tr>
+            <th>No</th><th>Nopung</th><th>Nama</th><th>Status</th><th>Membina</th>
+            <th>Binaan L1</th><th>Binaan L2</th><th>Potensi Promosi</th>
+            <th>Amanah DKI2</th><th>Amanah selain DKI2</th><th>Catatan Walas</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    </div><!-- /walasExecutionView -->
+
+    <div id="walasPromotionView" class="hidden">
+      <div class="subcard">
+        <div class="topbar">
+          <div>
+            <h3>Evaluasi Promosi</h3>
+            <div class="muted" id="promoPeriodText">Periode mengikuti pilihan pada Evaluasi Anggota.</div>
+          </div>
+          <button class="ghost" onclick="loadPromotionDashboard()">Refresh</button>
+        </div>
+        <div class="promo-kpis">
+          <div class="promo-kpi"><b id="promoKpiMembers">0</b>Anggota</div>
+          <div class="promo-kpi"><b id="promoKpiPriority">0</b>Prioritas</div>
+          <div class="promo-kpi"><b id="promoKpiNotStarted">0</b>Belum mulai</div>
+          <div class="promo-kpi"><b id="promoKpiDraft">0</b>Draft</div>
+          <div class="promo-kpi"><b id="promoKpiFinal">0</b>Final</div>
+          <div class="promo-kpi"><b id="promoKpiRevision">0</b>Perlu revisi</div>
+        </div>
+        <div class="note">Semua anggota kelas ditampilkan. Anggota dengan Potensi Promosi <b>Sudah</b> atau <b>Perlu Pembahasan</b> ditandai sebagai prioritas.</div>
+        <div style="overflow:auto;max-height:62vh;margin-top:12px">
+          <table id="promoMemberTable">
+            <thead><tr><th>No</th><th>Nopung</th><th>Nama</th><th>Umur Tarbawi</th><th>Potensi</th><th>Status Rubrik</th><th>Progress</th><th>Skor</th><th>Hasil</th><th>Aksi</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="promoStatus" class="statusbox"></div>
+      </div>
+
+      <div id="promoAssessmentCard" class="subcard hidden">
+        <div class="topbar">
+          <div>
+            <h3 id="promoAssessmentTitle">Rubrik Penilaian Promosi</h3>
+            <div class="muted" id="promoAssessmentMeta"></div>
+          </div>
+          <button class="ghost" onclick="closePromotionAssessment()">Kembali ke Daftar</button>
+        </div>
+        <div id="promoRevisionNote" class="note hidden"></div>
+        <div id="promoRubricContainer"></div>
+        <div class="sensitive-box">
+          <b>Pemeriksaan Pembatal Kelulusan Level 3</b>
+          <div class="muted" style="margin:5px 0 8px">Centang hanya jika kondisi tersebut benar-benar teridentifikasi. Informasi ini bersifat sensitif.</div>
+          <div id="promoCancelRules"></div>
+          <label>Catatan Akhir Walas</label>
+          <textarea id="promoFinalNote" placeholder="Catatan ringkas untuk hasil penilaian promosi"></textarea>
+        </div>
+        <div id="promoScoreSummary" class="note" style="margin-top:12px"></div>
+        <div class="promo-actions">
+          <button id="promoSaveDraftBtn" onclick="savePromotionAssessment(false)">Simpan Draft</button>
+          <button id="promoFinalizeBtn" class="secondary" onclick="savePromotionAssessment(true)">Finalisasi Penilaian</button>
+          <button class="ghost" onclick="closePromotionAssessment()">Batal / Kembali</button>
+        </div>
+        <div id="promoAssessmentStatus" class="statusbox"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="adminLogin" class="card hidden">
+    <h2 style="color:var(--admin)">Login Admin</h2>
+    <div class="grid3">
+      <div><label>Admin ID</label><input id="adminId" value="ADMIN"></div>
+      <div><label>PIN Admin</label><input id="adminPin" type="password"></div>
+      <button id="adminLoginBtn" class="admin" onclick="doAdminLogin()">Masuk Admin</button>
+    </div>
+    <div id="adminLoginStatus" class="statusbox"></div>
+  </div>
+
+  <div id="adminApp" class="card hidden">
+    <div class="topbar">
+      <div><h2 style="color:var(--admin)">Admin — Portal Walas</h2><div class="muted">Kelola periode aktif, kelas, akses Walas, dan data anggota dari satu portal.</div></div>
+      <div class="top-actions"><span id="adminName" class="pill admin"></span><button class="ghost" onclick="openAdminPin()">Ganti PIN Admin</button><button class="secondary" onclick="unifiedExit()">Keluar</button></div>
+    </div>
+
+    <div id="adminPinCard" class="subcard hidden">
+      <div class="topbar"><div><h3>Ganti PIN Admin</h3><div class="muted">PIN baru minimal 8 karakter dan harus mengandung huruf serta angka.</div></div><button class="ghost" onclick="closeAdminPin()">Tutup</button></div>
+      <div class="grid3">
+        <div><label>PIN Lama</label><input id="adminOldPin" type="password"></div>
+        <div><label>PIN Baru</label><input id="adminNewPin" type="password"></div>
+        <div><label>Ulangi PIN Baru</label><input id="adminConfirmPin" type="password"></div>
+      </div>
+      <br><button class="admin" onclick="changeAdminPin()">Simpan PIN Baru</button>
+      <div id="adminPinStatus" class="statusbox"></div>
+    </div>
+
+    <div class="subcard">
+      <div class="topbar"><div><h3>Periode Aktif & Rekap</h3><div id="activePeriodText" class="muted"></div></div><button class="ghost" onclick="loadPeriodRecap()">Refresh Rekap</button></div>
+      <div class="grid3">
+        <div><label>Bulan</label><select id="periodMonth"></select></div>
+        <div><label>Tahun</label><input id="periodYear" type="number" min="2020" max="2100"></div>
+        <button class="admin" onclick="setActivePeriod()">Tetapkan Periode Aktif</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="statActiveClasses">0</b>Kelas aktif</div>
+        <div class="stat"><b id="statActiveMembers">0</b>Anggota aktif</div>
+        <div class="stat"><b id="statEvaluated">0</b>Sudah terevaluasi</div>
+        <div class="stat"><b id="statCompleteClasses">0</b>Kelas lengkap</div>
+        <div class="stat"><b id="statIncompleteClasses">0</b>Belum lengkap</div>
+      </div>
+      <div style="overflow:auto;max-height:330px">
+        <table id="periodRecapTable"><thead><tr><th>Kelas</th><th>Walas</th><th>Anggota Aktif</th><th>Terevaluasi</th><th>Capaian</th><th>Status</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div id="periodStatus" class="statusbox"></div>
+    </div>
+
+    <div class="subcard">
+      <div class="topbar"><div><h3>Kelola Kelas & Akses Walas</h3><div class="muted">Kelas ditambahkan satu kali di sini. Portal Sekretaris membaca daftar kelas aktif dari master ini.</div></div><button class="ghost" onclick="loadClassAccess()">Refresh</button></div>
+      <div class="class-add-grid">
+        <div><label>Kode Kelas</label><input id="newClassCode" placeholder="Contoh: C117"></div>
+        <div><label>Nama Walas</label><input id="newClassWalas"></div>
+        <div><label>Email Walas (opsional)</label><input id="newClassEmail" type="email"></div>
+        <button class="admin" onclick="addClass()">+ Tambah Kelas</button>
+      </div>
+      <div id="classStatus" class="statusbox"></div>
+      <div style="overflow:auto;max-height:430px;margin-top:12px">
+        <table id="classAccessTable"><thead><tr><th>Kelas</th><th>Walas</th><th>Email</th><th>Aktif</th><th>Anggota Aktif</th><th>PIN</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+
+    <div id="adminPromoSection" class="subcard">
+      <div class="topbar">
+        <div>
+          <h3>Evaluasi Promosi</h3>
+          <div class="muted">Dashboard penilaian rubrik promosi seluruh kelas. Detail indikator bersifat hanya-baca bagi Admin.</div>
+        </div>
+        <button class="ghost" onclick="loadAdminPromotion()">Refresh</button>
+      </div>
+      <div class="toolbar" style="grid-template-columns:.7fr .8fr 1fr 1fr auto">
+        <input id="adminPromoYear" type="number" min="2020" max="2100">
+        <select id="adminPromoMonth"></select>
+        <select id="adminPromoClass"><option value="">Semua kelas</option></select>
+        <select id="adminPromoStatus">
+          <option value="">Semua status</option><option>Belum Dimulai</option><option>Draft</option><option>Final</option><option>Perlu Revisi</option><option>Dikunci</option>
+        </select>
+        <button class="admin" onclick="loadAdminPromotion()">Muat</button>
+      </div>
+      <div class="promo-kpis">
+        <div class="promo-kpi"><b id="adminPromoClasses">0</b>Kelas</div>
+        <div class="promo-kpi"><b id="adminPromoPriority">0</b>Prioritas</div>
+        <div class="promo-kpi"><b id="adminPromoNotStarted">0</b>Belum mulai</div>
+        <div class="promo-kpi"><b id="adminPromoDraft">0</b>Draft</div>
+        <div class="promo-kpi"><b id="adminPromoFinal">0</b>Final</div>
+        <div class="promo-kpi"><b id="adminPromoRevision">0</b>Perlu revisi</div>
+      </div>
+      <div style="overflow:auto;max-height:440px;margin-top:12px">
+        <table id="adminPromoTable">
+          <thead><tr><th>Kelas</th><th>Walas</th><th>Nopung</th><th>Nama</th><th>Potensi</th><th>Status</th><th>Progress</th><th>Skor</th><th>%</th><th>Hasil</th><th>Pembatal</th><th>Update</th><th>Aksi</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="adminPromoStatusBox" class="statusbox"></div>
+    </div>
+
+    <div id="adminPromoDetail" class="subcard hidden">
+      <div class="topbar">
+        <div><h3>Detail Evaluasi Promosi</h3><div class="muted" id="adminPromoDetailMeta"></div></div>
+        <button class="ghost" onclick="closeAdminPromoDetail()">Tutup</button>
+      </div>
+      <div id="adminPromoDetailBody"></div>
+      <div id="adminPromoSensitive" class="sensitive-box"></div>
+      <div class="promo-actions">
+        <button id="adminPromoReopenBtn" onclick="adminRequestPromoRevision()">Minta Revisi / Buka Kembali</button>
+        <button id="adminPromoLockBtn" class="admin" onclick="adminLockPromo()">Finalisasi / Kunci</button>
+      </div>
+      <div id="adminPromoDetailStatus" class="statusbox"></div>
+    </div>
+
+    <div id="adminMemberSection"></div>
+    <h2 style="color:var(--admin)">Administrasi Anggota</h2>
+    <div class="muted">Tambah, edit, mutasi, ubah status, atau hapus anggota.</div>
+    <div class="toolbar">
+      <input id="searchMember" oninput="renderAdminTable()" placeholder="Cari nama / nopung...">
+      <select id="filterClass" onchange="renderAdminTable()"><option value="">Semua kelas</option></select>
+      <button class="admin" onclick="openAddModal()">+ Tambah Anggota</button>
+    </div>
+
+    <div class="note">Disarankan memakai Tidak Aktif/Mutasi, bukan hapus permanen. Hapus permanen hanya tersedia jika belum ada riwayat evaluasi.</div>
+    <br>
+    <div style="overflow:auto;max-height:68vh">
+      <table id="adminTable">
+        <thead><tr>
+          <th>Nopung</th><th>Kelas</th><th>Nama</th><th>TTL</th><th>Pelantikan</th><th>Fakultas</th><th>Angkatan</th><th>Keterangan</th><th>Walas</th><th>Status</th><th>Aksi</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <br>
+    <button class="admin" onclick="showAdminResults()">Lihat Hasil Evaluasi</button>
+    <div id="adminStatus" class="statusbox"></div>
+
+    <div id="adminResultView" class="hidden" style="margin-top:18px">
+      <div class="topbar">
+        <div><h2 style="color:var(--admin)">Dashboard Hasil Evaluasi</h2><div id="adminResultPeriod" class="muted"></div></div>
+        <button class="ghost" onclick="hideAdminResults()">Tutup Hasil</button>
+      </div>
+      <div class="toolbar">
+        <select id="adminEvalClass" onchange="loadAdminResults()"><option value="">Semua kelas</option></select>
+        <div></div><button class="admin" onclick="loadAdminResults()">Muat / Refresh</button>
+      </div>
+      <div id="adminSummary" class="note"></div><br>
+      <div style="overflow:auto;max-height:70vh">
+        <table id="adminResultTable">
+          <thead><tr><th>Kelas</th><th>Nopung</th><th>Nama</th><th>Status</th><th>Membina</th><th>Binaan L1</th><th>Binaan L2</th><th>Potensi</th><th>Amanah DKI2</th><th>Amanah selain DKI2</th><th>Catatan</th><th>Update</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADMIN -->
+<div id="memberModal" class="modal">
+  <div class="modal-card">
+    <h2 id="modalTitle" style="color:var(--admin)">Tambah Anggota</h2>
+    <input type="hidden" id="originalNopung">
+    <div class="grid2">
+      <div><label>Nopung (7 digit)</label><input id="mNopung" maxlength="7"></div>
+      <div><label>Kelas</label><select id="mKelas"></select></div>
+      <div><label>Nama</label><input id="mNama"></div>
+      <div><label>Tanggal Lahir</label><input id="mTanggalLahir" type="date"></div>
+      <div><label>Tahun Pelantikan</label><input id="mTahunPelantikan"></div>
+      <div><label>Fakultas</label><input id="mFakultas"></div>
+      <div><label>Angkatan</label><input id="mAngkatan" placeholder="Contoh: 2022"></div>
+      <div><label>Keterangan</label>
+        <select id="mKeterangan"><option value="">- Pilih -</option><option>Dosen/Tendik</option><option>Mahasiswa</option><option>Alumni</option></select>
+      </div>
+      <div><label>Status</label>
+        <select id="mStatus"><option>Aktif</option><option>Tidak Aktif</option><option>Mutasi</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" onclick="closeModal()">Batal</button>
+      <button class="admin" onclick="saveMember()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script src="compat.js?v=20261120-unified-live1"></script>
+<script>
+let WALAS_TOKEN=null, MEMBERS=[], FACULTY_OPTIONS=[];
+let PROMO_ROWS=[], PROMO_ASSESSMENT=null, WALAS_MODULE='execution';
+let ADMIN_PROMO_DETAIL=null;
+let WALAS_CLASS='', WALAS_ACTIVE_PERIOD='', WALAS_SELECTED_PERIOD='', ADMIN_PREVIEW_WALAS=false;
+let ADMIN_TOKEN=null, ADMIN_MEMBERS=[], CLASS_OPTIONS=[], CLASS_ACCESS=[];
+let EDIT_MODE='add';
+let ADMIN_MEMBERS_LOADED=false, ADMIN_PROMO_LOADED=false, ADMIN_LAZY_OBSERVER=null;
+let WALAS_PERIOD_REQUEST_SEQ=0;
+let WALAS_SUPPORT_REQUEST_SEQ=0, WALAS_SUPPORT_LOADED=false;
+let WALAS_LOGIN_AUDIT_RECORDED=false;
+
+function switchRole(role){
+  document.getElementById('tabWalas').classList.toggle('active',role==='walas');
+  document.getElementById('tabAdmin').classList.toggle('active',role==='admin');
+  document.getElementById('walasLogin').classList.toggle('hidden',role!=='walas');
+  document.getElementById('adminLogin').classList.toggle('hidden',role!=='admin');
+  document.getElementById('walasApp').classList.add('hidden');
+  document.getElementById('adminApp').classList.add('hidden');
+}
+
+function statusBox(id,msg,ok){
+  const e=document.getElementById(id);
+  e.textContent=msg;e.className='statusbox '+(ok?'ok':'err');e.style.display='block';
+}
+function clearStatus(id){
+  const e=document.getElementById(id);
+  if(!e) return;
+  e.textContent='';
+  e.style.display='none';
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+
+function loadPublicClasses(){
+  google.script.run.withSuccessHandler(rows=>{
+    const sel=document.getElementById('kelas');
+    const current=sel.value;
+    sel.innerHTML='<option value="">- Pilih kelas -</option>';
+    (rows||[]).forEach(r=>sel.add(new Option(r.kelas,r.kelas)));
+    if(current && Array.from(sel.options).some(o=>o.value===current)) sel.value=current;
+  }).withFailureHandler(e=>{
+    const sel=document.getElementById('kelas');
+    sel.innerHTML='<option value="">Daftar kelas gagal dimuat</option>';
+  }).publicGetActiveClasses();
+}
+
+document.addEventListener('DOMContentLoaded',loadPublicClasses);
+
+/* WALAS */
+function enterWalasApp(res, adminPreview){
+  WALAS_TOKEN=res.token;
+  WALAS_CLASS=res.kelas;
+  WALAS_ACTIVE_PERIOD=res.currentPeriod||res.activePeriod||res.period||'';
+  MEMBERS=res.members||[];
+  FACULTY_OPTIONS=res.facultyOptions||FACULTY_OPTIONS||[];
+  ADMIN_PREVIEW_WALAS=!!adminPreview;
+  WALAS_LOGIN_AUDIT_RECORDED=ADMIN_PREVIEW_WALAS;
+  WALAS_SUPPORT_LOADED=false;
+
+  document.getElementById('walasLogin').classList.add('hidden');
+  document.getElementById('adminApp').classList.add('hidden');
+  document.getElementById('walasApp').classList.remove('hidden');
+
+  document.getElementById('kelasTitle').textContent=
+    (ADMIN_PREVIEW_WALAS?'Mode Admin — ':'')+'Evaluasi Kelas '+res.kelas;
+  document.getElementById('walasText').textContent='Walas: '+(res.walas||'-');
+
+  const monthSel=document.getElementById('walasMonth');
+  monthSel.innerHTML='';
+  (res.months||[]).forEach(m=>monthSel.add(new Option(m,m)));
+  document.getElementById('walasYear').value=res.activeYear||new Date().getFullYear();
+  monthSel.value=res.activeMonth||((res.months||[])[new Date().getMonth()]||'');
+
+  const banner=document.getElementById('adminWalasBanner');
+  const returnBtn=document.getElementById('returnAdminBtn');
+  const pinBtn=document.getElementById('walasPinBtn');
+  const exitBtn=document.getElementById('walasExitBtn');
+
+  if(ADMIN_PREVIEW_WALAS){
+    banner.classList.remove('hidden');
+    document.getElementById('adminPreviewClass').textContent=res.kelas;
+    returnBtn.classList.remove('hidden');
+    pinBtn.classList.add('hidden');
+    exitBtn.textContent='Kembali ke Admin';
+  }else{
+    banner.classList.add('hidden');
+    returnBtn.classList.add('hidden');
+    pinBtn.classList.remove('hidden');
+    exitBtn.textContent='Keluar';
+  }
+
+  closeWalasPin();
+  switchWalasModule('execution');
+
+  // Portal dibuka dahulu. Data periode menyusul tanpa menahan layar login.
+  document.getElementById('periodText').textContent='Memuat data evaluasi...';
+  document.getElementById('memberCount').textContent='Memuat anggota...';
+  const evalBody=document.querySelector('#evalTable tbody');
+  if(evalBody) evalBody.innerHTML='<tr><td colspan="16">Memuat data anggota kelas...</td></tr>';
+  const histBody=document.querySelector('#walasPeriodHistoryTable tbody');
+  if(histBody) histBody.innerHTML='<tr><td colspan="4" style="text-align:center">Memuat riwayat periode...</td></tr>';
+
+  // Beri browser kesempatan menggambar halaman sebelum request data besar.
+  setTimeout(loadWalasPeriod,0);
+}
+
+function doLogin(){
+  const btn=document.getElementById('loginBtn');
+  if(btn) btn.disabled=true;
+  statusBox('loginStatus','Memverifikasi PIN...',true);
+  google.script.run.withSuccessHandler(res=>{
+    if(btn) btn.disabled=false;
+    enterWalasApp(res,false);
+  }).withFailureHandler(e=>{
+    if(btn) btn.disabled=false;
+    statusBox('loginStatus',e.message||String(e),false);
+  }).login(document.getElementById('kelas').value,document.getElementById('pin').value);
+}
+
+function exitWalas(){
+  if(ADMIN_PREVIEW_WALAS){
+    returnToAdmin();
+  }else{
+    location.reload();
+  }
+}
+
+function returnToAdmin(){
+  ADMIN_PREVIEW_WALAS=false;
+  WALAS_TOKEN=null;
+  WALAS_CLASS='';
+  WALAS_SELECTED_PERIOD='';
+  MEMBERS=[];
+  closeWalasPin();
+  document.getElementById('resultView').classList.add('hidden');
+  document.getElementById('adminWalasBanner').classList.add('hidden');
+  document.getElementById('walasApp').classList.add('hidden');
+  document.getElementById('adminApp').classList.remove('hidden');
+  loadClassAccess();
+  loadPeriodRecap();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function loadWalasPeriod(forceSource){
+  const year=Number(document.getElementById('walasYear').value);
+  const month=document.getElementById('walasMonth').value;
+  const requestSeq=++WALAS_PERIOD_REQUEST_SEQ;
+  statusBox('walasPeriodStatus','Memuat data anggota & evaluasi...',true);
+
+  google.script.run
+    .withSuccessHandler(res=>{
+      if(requestSeq!==WALAS_PERIOD_REQUEST_SEQ) return;
+
+      MEMBERS=res.members||[];
+
+      // Supaya dropdown Fakultas langsung valid, pakai nilai yang ada pada kelas
+      // sambil menunggu daftar lengkap dimuat di belakang.
+      const localFac=(res.facultyOptions||[]).concat(
+        MEMBERS.map(x=>x.fakultas).filter(Boolean)
+      );
+      FACULTY_OPTIONS=Array.from(new Set((FACULTY_OPTIONS||[]).concat(localFac))).sort();
+
+      WALAS_SELECTED_PERIOD=res.period||'';
+      WALAS_ACTIVE_PERIOD=res.currentPeriod||res.activePeriod||WALAS_ACTIVE_PERIOD;
+
+      document.getElementById('periodText').textContent='Periode dipilih: '+WALAS_SELECTED_PERIOD;
+      document.getElementById('evalPeriodHeader').textContent='Periode Evaluasi: '+WALAS_SELECTED_PERIOD;
+      document.getElementById('memberCount').textContent=MEMBERS.length+' anggota';
+      document.getElementById('walasActivePeriodNote').textContent='Periode berjalan otomatis: '+(WALAS_ACTIVE_PERIOD||'-');
+
+      const s=res.summary||{};
+      document.getElementById('walasKpiTotal').textContent=s.totalMembers||0;
+      document.getElementById('walasKpiDone').textContent=s.evaluatedMembers||0;
+      document.getElementById('walasKpiMissing').textContent=s.notEvaluatedMembers||0;
+      document.getElementById('walasKpiPercent').textContent=(s.percent||0)+'%';
+
+      document.getElementById('walasPeriodInfo').innerHTML = res.isCurrentPeriod
+        ? '<b>Periode berjalan otomatis.</b> Klik Simpan Evaluasi akan menyimpan EVALUASI sekaligus memperbarui master ANGGOTA (Tanggal Lahir, Tahun Pelantikan, Fakultas, Angkatan, Keterangan, dan Status). Tidak memerlukan setting periode dari Admin.'
+        : '<b>Periode arsip.</b> Daftar anggota mengikuti rekaman yang benar-benar tersimpan pada periode ini. Koreksi evaluasi arsip tidak mengubah profil master anggota saat ini.';
+
+      document.getElementById('resultPeriodText').textContent='Tampilan hanya-baca untuk '+WALAS_SELECTED_PERIOD+'.';
+      document.getElementById('resultView').classList.add('hidden');
+
+      // TABEL UTAMA + RIWAYAT ditampilkan dari respons yang sama.
+      renderEval();
+      renderWalasPeriodHistory(res.history||[]);
+      clearStatus('walasPeriodStatus');
+
+      // Riwayat sudah ikut respons utama dari indeks ringan.
+      // Daftar Fakultas lengkap dimuat setelah halaman utama stabil.
+      setTimeout(function(){loadWalasSupportingData(false);},1200);
+
+      if(!WALAS_LOGIN_AUDIT_RECORDED && !ADMIN_PREVIEW_WALAS){
+        WALAS_LOGIN_AUDIT_RECORDED=true;
+        setTimeout(function(){
+          google.script.run.withFailureHandler(function(){})
+            .walasRecordLoginAudit(WALAS_TOKEN);
+        },250);
+      }
+    })
+    .withFailureHandler(e=>{
+      if(requestSeq===WALAS_PERIOD_REQUEST_SEQ)
+        statusBox('walasPeriodStatus',e.message||String(e),false);
+    })
+    .walasGetPeriodDashboard(WALAS_TOKEN,year,month,!!forceSource);
+}
+
+function refreshFacultySelectOptions(){
+  document.querySelectorAll('#evalTable select[data-field="fakultas"]').forEach(sel=>{
+    const current=sel.value;
+    const opts=(FACULTY_OPTIONS||[]).slice();
+    if(current && !opts.some(v=>String(v).toLowerCase()===String(current).toLowerCase())){
+      opts.unshift(current);
+    }
+    sel.innerHTML='<option value="">- Pilih -</option>';
+    opts.forEach(v=>sel.add(new Option(v,v)));
+    sel.value=current;
+  });
+}
+
+function renderWalasPeriodHistory(rows){
+  const tb=document.querySelector('#walasPeriodHistoryTable tbody');
+  if(!tb) return;
+  tb.innerHTML='';
+  const data=Array.isArray(rows)?rows:[];
+  if(!data.length){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="4" class="muted" style="text-align:center">Belum ada riwayat evaluasi.</td>';
+    tb.appendChild(tr);
+    return;
+  }
+  data.forEach(r=>{
+    const tr=document.createElement('tr');
+    const month=String(r.month||'');
+    const year=Number(r.year||0);
+    tr.innerHTML=`
+      <td data-label="Periode">${esc(r.period||'-')}</td>
+      <td data-label="Terevaluasi" style="text-align:center">${esc(r.evaluated==null?'0':r.evaluated)}</td>
+      <td data-label="Terakhir Diubah">${esc(r.updatedAt||'-')}</td>
+      <td data-label="Aksi"><button class="ghost" type="button">Buka</button></td>`;
+    const btn=tr.querySelector('button');
+    btn.addEventListener('click',()=>openWalasHistoryPeriod(month,year));
+    tb.appendChild(tr);
+  });
+}
+
+function loadWalasSupportingData(force){
+  if(!WALAS_TOKEN)return;
+  if(WALAS_SUPPORT_LOADED && !force)return;
+
+  const seq=++WALAS_SUPPORT_REQUEST_SEQ;
+  google.script.run.withSuccessHandler(res=>{
+    if(seq!==WALAS_SUPPORT_REQUEST_SEQ)return;
+    WALAS_SUPPORT_LOADED=true;
+
+    WALAS_ACTIVE_PERIOD=res.activePeriod||WALAS_ACTIVE_PERIOD;
+    document.getElementById('walasActivePeriodNote').textContent=
+      'Periode berjalan otomatis: '+(WALAS_ACTIVE_PERIOD||'-');
+
+    if(res.facultyOptions&&res.facultyOptions.length){
+      FACULTY_OPTIONS=res.facultyOptions.slice();
+      refreshFacultySelectOptions();
+    }
+    if(res.history&&res.history.length){
+      renderWalasPeriodHistory(res.history);
+    }
+  }).withFailureHandler(function(){
+    // Jangan menghapus riwayat yang sudah tampil dari respons utama.
+  }).walasGetSupportingData(WALAS_TOKEN);
+}
+
+function openWalasHistoryPeriod(month,year){
+  if(!month||!year) return;
+  document.getElementById('walasMonth').value=month;
+  document.getElementById('walasYear').value=year;
+  loadWalasPeriod();
+  document.getElementById('walasPeriodCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function openWalasPin(){
+  if(ADMIN_PREVIEW_WALAS) return;
+  ['walasOldPin','walasNewPin','walasConfirmPin'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('walasPinStatus').style.display='none';
+  document.getElementById('walasPinCard').classList.remove('hidden');
+  document.getElementById('walasPinCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeWalasPin(){document.getElementById('walasPinCard').classList.add('hidden');}
+function changeWalasPin(){
+  statusBox('walasPinStatus','Mengubah PIN...',true);
+  google.script.run.withSuccessHandler(res=>{
+    statusBox('walasPinStatus',res.message,true);
+    setTimeout(()=>location.reload(),1200);
+  }).withFailureHandler(e=>statusBox('walasPinStatus',e.message||String(e),false))
+    .walasChangeOwnPin(WALAS_TOKEN,document.getElementById('walasOldPin').value,document.getElementById('walasNewPin').value,document.getElementById('walasConfirmPin').value);
+}
+
+function facultySelectHtml_(currentValue,i){
+  const current=String(currentValue||'').trim();
+  const options=(FACULTY_OPTIONS||[]).slice();
+
+  // Jika ada data lama/varian penulisan yang belum sama persis dengan daftar baku,
+  // pertahankan nilainya agar tidak hilang saat halaman dibuka.
+  if(current && !options.some(v=>String(v).toLowerCase()===current.toLowerCase())){
+    options.unshift(current);
+  }
+
+  let html='<select data-field="fakultas" data-i="'+i+'">';
+  html+='<option value="" '+(!current?'selected':'')+'>- Pilih -</option>';
+  options.forEach(v=>{
+    const selected=String(v).toLowerCase()===current.toLowerCase()?'selected':'';
+    html+='<option value="'+esc(v)+'" '+selected+'>'+esc(v)+'</option>';
+  });
+  html+='</select>';
+  return html;
+}
+
+function renderEval(){
+  const tb=document.querySelector('#evalTable tbody');tb.innerHTML='';
+  MEMBERS.forEach((m,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="readonly" data-label="No">${i+1}</td>
+      <td class="readonly" data-label="Nopung">${esc(m.nopung)}</td>
+      <td class="readonly" data-label="Nama">${esc(m.nama)}</td>
+      <td data-label="Tanggal Lahir"><input type="date" data-field="tanggalLahir" data-i="${i}" value="${esc(m.tanggalLahir)}"></td>
+      <td data-label="Tahun Pelantikan"><input data-field="tahunPelantikan" data-i="${i}" value="${esc(m.tahunPelantikan)}"></td>
+      <td data-label="Fakultas">${facultySelectHtml_(m.fakultas,i)}</td>
+      <td data-label="Angkatan"><input data-field="angkatan" data-i="${i}" value="${esc(m.angkatan)}" placeholder="Contoh: 2022"></td>
+      <td data-label="Keterangan"><select data-field="keterangan" data-i="${i}">
+        <option value="" ${!m.keterangan?'selected':''}>- Pilih -</option>
+        <option ${m.keterangan==='Dosen/Tendik'?'selected':''}>Dosen/Tendik</option>
+        <option ${m.keterangan==='Mahasiswa'?'selected':''}>Mahasiswa</option>
+        <option ${m.keterangan==='Alumni'?'selected':''}>Alumni</option>
+      </select></td>
+      <td data-label="Status"><select data-field="status" data-i="${i}">
+        <option ${m.status==='Aktif'?'selected':''}>Aktif</option>
+        <option ${m.status==='Tidak Aktif'?'selected':''}>Tidak Aktif</option>
+        <option ${m.status==='Mutasi'?'selected':''}>Mutasi</option>
+      </select></td>
+      <td data-label="Amanah DKI2"><textarea data-field="amanahDki2" data-i="${i}">${esc(m.amanahDki2)}</textarea></td>
+      <td data-label="Amanah selain DKI2"><textarea data-field="amanahLuar" data-i="${i}">${esc(m.amanahLuar)}</textarea></td>
+      <td data-label="Membina"><select data-field="membina" data-i="${i}">
+        <option ${m.membina==='Belum'?'selected':''}>Belum</option>
+        <option ${m.membina==='Sudah'?'selected':''}>Sudah</option>
+      </select></td>
+      <td data-label="Jumlah Binaan L1"><input type="number" min="0" step="1" data-field="jumlahBinaanL1" data-i="${i}" value="${esc(m.jumlahBinaanL1)}"></td>
+      <td data-label="Jumlah Binaan L2"><input type="number" min="0" step="1" data-field="jumlahBinaanL2" data-i="${i}" value="${esc(m.jumlahBinaanL2)}"></td>
+      <td data-label="Potensi Promosi"><select data-field="potensi" data-i="${i}">
+        <option ${m.potensi==='Belum'?'selected':''}>Belum</option>
+        <option ${m.potensi==='Sudah'?'selected':''}>Sudah</option>
+        <option ${m.potensi==='Perlu Pembahasan'?'selected':''}>Perlu Pembahasan</option>
+      </select></td>
+      <td data-label="Catatan Walas"><textarea data-field="catatan" data-i="${i}">${esc(m.catatan)}</textarea></td>`;
+    tb.appendChild(tr);
+  });
+}
+function showResults(){
+  // Ambil nilai terbaru yang sedang terlihat di form, termasuk sesudah Simpan.
+  MEMBERS=collectEval();
+  const tb=document.querySelector('#resultTable tbody');tb.innerHTML='';
+  MEMBERS.forEach((m,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="readonly" data-label="No">${i+1}</td>
+      <td class="readonly" data-label="Nopung">${esc(m.nopung)}</td>
+      <td class="readonly" data-label="Nama">${esc(m.nama)}</td>
+      <td data-label="Status">${esc(m.status||'-')}</td>
+      <td data-label="Membina">${esc(m.membina||'Belum')}</td>
+      <td data-label="Binaan L1">${esc(m.jumlahBinaanL1===''?'-':m.jumlahBinaanL1)}</td>
+      <td data-label="Binaan L2">${esc(m.jumlahBinaanL2===''?'-':m.jumlahBinaanL2)}</td>
+      <td data-label="Potensi Promosi">${esc(m.potensi||'Belum')}</td>
+      <td data-label="Amanah DKI2">${esc(m.amanahDki2||'-')}</td>
+      <td data-label="Amanah selain DKI2">${esc(m.amanahLuar||'-')}</td>
+      <td data-label="Catatan Walas">${esc(m.catatan||'-')}</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('resultView').classList.remove('hidden');
+  document.getElementById('resultView').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function hideResults(){
+  document.getElementById('resultView').classList.add('hidden');
+  document.getElementById('evalTable').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function collectEval(){
+  const rows=MEMBERS.map(m=>Object.assign({},m));
+  document.querySelectorAll('#evalTable [data-field]').forEach(el=>{
+    rows[Number(el.dataset.i)][el.dataset.field]=el.value;
+  });
+  return rows;
+}
+function saveAll(){
+  document.getElementById('saveBtn').disabled=true;
+  statusBox('saveStatus','Menyimpan...',true);
+  const payload=collectEval();
+  google.script.run.withSuccessHandler(res=>{
+    document.getElementById('saveBtn').disabled=false;
+    MEMBERS=(res.members&&res.members.length)?res.members:payload;
+    WALAS_SELECTED_PERIOD=res.period||WALAS_SELECTED_PERIOD;
+    document.getElementById('evalPeriodHeader').textContent='Periode Evaluasi: '+WALAS_SELECTED_PERIOD;
+
+    document.getElementById('memberCount').textContent=MEMBERS.length+' anggota';
+    const s=res.summary||{};
+    document.getElementById('walasKpiTotal').textContent=s.totalMembers||0;
+    document.getElementById('walasKpiDone').textContent=s.evaluatedMembers||0;
+    document.getElementById('walasKpiMissing').textContent=s.notEvaluatedMembers||0;
+    document.getElementById('walasKpiPercent').textContent=(s.percent||0)+'%';
+    renderEval();
+    WALAS_SUPPORT_LOADED=false;
+    setTimeout(function(){loadWalasSupportingData(false);},800);
+
+    const mode=res.isCurrentPeriod?'bulan berjalan':'periode arsip';
+    let msg='Evaluasi '+WALAS_SELECTED_PERIOD+' berhasil disimpan: '+res.saved+' anggota ('+mode+').';
+    msg+=' Tanggal Lahir, Tahun Pelantikan, Fakultas, Angkatan, Keterangan, dan data evaluasi periode ini sudah tersimpan.';
+    if(!res.isCurrentPeriod){
+      msg+=' Profil master ANGGOTA tidak diubah karena periode ini arsip.';
+    }else{
+      msg+=' Profil master ANGGOTA otomatis diperbarui tanpa memerlukan setting Admin.';
+    }
+    statusBox('saveStatus',msg,true);
+  }).withFailureHandler(e=>{
+    document.getElementById('saveBtn').disabled=false;
+    statusBox('saveStatus',e.message||String(e),false);
+  }).saveEvaluationsForPeriod(
+    WALAS_TOKEN,
+    Number(document.getElementById('walasYear').value),
+    document.getElementById('walasMonth').value,
+    payload
+  );
+}
+
+
+function switchWalasModule(mode){
+  WALAS_MODULE=mode;
+  const exec=document.getElementById('walasExecutionView');
+  const promo=document.getElementById('walasPromotionView');
+  const b1=document.getElementById('walasModuleExecutionBtn');
+  const b2=document.getElementById('walasModulePromotionBtn');
+  if(!exec||!promo)return;
+  exec.classList.toggle('hidden',mode!=='execution');
+  promo.classList.toggle('hidden',mode!=='promotion');
+  b1.classList.toggle('active',mode==='execution');
+  b2.classList.toggle('active',mode==='promotion');
+  if(mode==='promotion') loadPromotionDashboard();
+}
+
+function promotionYearMonth(){
+  return {year:Number(document.getElementById('walasYear').value),month:document.getElementById('walasMonth').value};
+}
+function promoBadge(status){
+  const cls=status==='Dikunci'?'locked':(status==='Final'?'done':(status==='Perlu Revisi'?'danger':(status==='Draft'?'warn':'')));
+  return '<span class="badge '+cls+'">'+esc(status||'Belum Dimulai')+'</span>';
+}
+function loadPromotionDashboard(){
+  if(!WALAS_TOKEN)return;
+  const p=promotionYearMonth();
+  statusBox('promoStatus','Memuat evaluasi promosi...',true);
+  google.script.run.withSuccessHandler(res=>{
+    PROMO_ROWS=res.rows||[];
+    document.getElementById('promoPeriodText').textContent='Periode: '+(res.period||'-')+' | Kelas: '+(res.kelas||WALAS_CLASS);
+    const s=res.summary||{};
+    document.getElementById('promoKpiMembers').textContent=s.totalMembers||0;
+    document.getElementById('promoKpiPriority').textContent=s.priority||0;
+    document.getElementById('promoKpiNotStarted').textContent=s.notStarted||0;
+    document.getElementById('promoKpiDraft').textContent=s.draft||0;
+    document.getElementById('promoKpiFinal').textContent=(s.final||0)+(s.locked||0);
+    document.getElementById('promoKpiRevision').textContent=s.revision||0;
+    const tb=document.querySelector('#promoMemberTable tbody');tb.innerHTML='';
+    PROMO_ROWS.forEach((r,i)=>{
+      const priority=(r.potensi==='Sudah'||r.potensi==='Perlu Pembahasan')?'<span class="badge warn">Prioritas</span> ':'';
+      const score=r.total===''?'-':r.total+'/132';
+      const action=r.status==='Dikunci'?'Lihat':'Isi / Lanjutkan';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${i+1}</td><td>${esc(r.nopung)}</td><td><b>${esc(r.nama)}</b></td>
+        <td>${r.umurTarbawi===''?'-':esc(r.umurTarbawi)+' th'}</td>
+        <td>${priority}${esc(r.potensi||'Belum')}</td><td>${promoBadge(r.status)}</td>
+        <td>${Number(r.progress)||0}/33</td><td>${score}</td><td>${esc(r.result||'-')}</td>
+        <td><button class="ghost" onclick="openPromotionAssessment('${esc(r.nopung)}')">${action}</button></td>`;
+      tb.appendChild(tr);
+    });
+    if(!PROMO_ROWS.length)tb.innerHTML='<tr><td colspan="10">Tidak ada anggota aktif pada kelas ini.</td></tr>';
+    clearStatus('promoStatus');
+  }).withFailureHandler(e=>statusBox('promoStatus',e.message||String(e),false))
+    .walasGetPromotionDashboard(WALAS_TOKEN,p.year,p.month);
+}
+function openPromotionAssessment(nopung){
+  const p=promotionYearMonth();
+  statusBox('promoStatus','Memuat rubrik...',true);
+  google.script.run.withSuccessHandler(res=>{
+    PROMO_ASSESSMENT=res;
+    renderPromotionAssessment();
+    document.getElementById('promoAssessmentCard').classList.remove('hidden');
+    document.getElementById('promoAssessmentCard').scrollIntoView({behavior:'smooth',block:'start'});
+    clearStatus('promoStatus');
+  }).withFailureHandler(e=>statusBox('promoStatus',e.message||String(e),false))
+    .walasGetPromotionAssessment(WALAS_TOKEN,p.year,p.month,nopung);
+}
+function closePromotionAssessment(){
+  PROMO_ASSESSMENT=null;
+  document.getElementById('promoAssessmentCard').classList.add('hidden');
+  document.getElementById('promoMemberTable').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderPromotionAssessment(){
+  const a=PROMO_ASSESSMENT;if(!a)return;
+  document.getElementById('promoAssessmentTitle').textContent='Rubrik Penilaian Promosi — '+a.nama;
+  document.getElementById('promoAssessmentMeta').textContent=a.kelas+' | '+a.nopung+' | '+a.period+' | '+promoPlainStatus(a.status);
+  const rev=document.getElementById('promoRevisionNote');
+  if(a.needsRevision){rev.textContent='Perlu revisi dari Admin: '+(a.revisionReason||'-');rev.classList.remove('hidden');}
+  else rev.classList.add('hidden');
+
+  const box=document.getElementById('promoRubricContainer');box.innerHTML='';
+  let lastDim='';
+  (a.rubric||[]).forEach(r=>{
+    if(r.dimensi!==lastDim){const d=document.createElement('div');d.className='dimension-title';d.textContent=r.dimensi;box.appendChild(d);lastDim=r.dimensi;}
+    const div=document.createElement('div');div.className='rubric-item';div.dataset.no=r.no;
+    let opts='';
+    [1,2,3,4].forEach(sc=>{
+      opts+=`<div class="rubric-option"><label><input type="radio" name="promoScore_${r.no}" value="${sc}" ${Number(r.score)===sc?'checked':''} ${a.locked?'disabled':''}><span><b>${sc} — ${['','Terbatas','Berkembang','Baik','Teladan'][sc]}</b><small>${esc(r['s'+sc])}</small></span></label></div>`;
+    });
+    div.innerHTML=`<div class="rubric-code">${esc(r.kode)} • Indikator ${r.no}/33</div><div class="rubric-title">${esc(r.indikator)}</div>
+      <div class="rubric-options">${opts}</div><label>Catatan / bukti penilaian</label>
+      <textarea data-promo-comment="${r.no}" ${a.locked?'disabled':''}>${esc(r.comment||'')}</textarea>`;
+    box.appendChild(div);
+  });
+
+  const cr=document.getElementById('promoCancelRules');cr.innerHTML='';
+  (a.cancelRules||[]).forEach((label,i)=>{
+    const checked=(a.cancelFactors||[]).includes(String(i+1));
+    const line=document.createElement('label');line.style.fontWeight='500';line.style.margin='7px 0';
+    line.innerHTML=`<input type="checkbox" data-cancel="${i+1}" style="width:auto;margin-right:8px" ${checked?'checked':''} ${a.locked?'disabled':''}>${i+1}. ${esc(label)}`;
+    cr.appendChild(line);
+  });
+  document.getElementById('promoFinalNote').value=a.finalNote||'';
+  document.getElementById('promoFinalNote').disabled=!!a.locked;
+  document.getElementById('promoSaveDraftBtn').disabled=!!a.locked;
+  document.getElementById('promoFinalizeBtn').disabled=!!a.locked;
+  box.querySelectorAll('input[type=radio]').forEach(el=>el.addEventListener('change',updatePromotionScoreSummary));
+  updatePromotionScoreSummary();
+}
+function promoPlainStatus(s){return s||'Belum Dimulai';}
+function collectPromotionPayload(){
+  const a=PROMO_ASSESSMENT,items=[];
+  (a.rubric||[]).forEach(r=>{
+    const checked=document.querySelector(`input[name="promoScore_${r.no}"]:checked`);
+    const comment=document.querySelector(`[data-promo-comment="${r.no}"]`);
+    items.push({no:r.no,score:checked?Number(checked.value):0,comment:comment?comment.value:''});
+  });
+  const cancelFactors=Array.from(document.querySelectorAll('[data-cancel]:checked')).map(x=>x.dataset.cancel);
+  return {nopung:a.nopung,items:items,cancelFactors:cancelFactors,finalNote:document.getElementById('promoFinalNote').value};
+}
+function updatePromotionScoreSummary(){
+  if(!PROMO_ASSESSMENT)return;
+  const p=collectPromotionPayload(),scored=p.items.filter(x=>x.score>0),total=scored.reduce((a,b)=>a+b.score,0);
+  const pct=scored.length===33?(total/132*100).toFixed(2):'-';
+  document.getElementById('promoScoreSummary').innerHTML='<b>Progress:</b> '+scored.length+'/33 &nbsp; | &nbsp; <b>Total:</b> '+(scored.length===33?total+'/132':'belum lengkap')+' &nbsp; | &nbsp; <b>Capaian:</b> '+pct+(pct==='-'?'':'%');
+}
+function savePromotionAssessment(finalize){
+  if(!PROMO_ASSESSMENT)return;
+  const p=promotionYearMonth(),payload=collectPromotionPayload();
+  const btn=finalize?document.getElementById('promoFinalizeBtn'):document.getElementById('promoSaveDraftBtn');
+  if(finalize&&!confirm('Finalisasi penilaian promosi ini? Admin masih dapat meminta revisi atau mengunci hasil.'))return;
+  btn.disabled=true;statusBox('promoAssessmentStatus',finalize?'Memfinalisasi penilaian...':'Menyimpan draft...',true);
+  google.script.run.withSuccessHandler(res=>{
+    btn.disabled=false;PROMO_ASSESSMENT=res.assessment;renderPromotionAssessment();loadPromotionDashboard();
+    statusBox('promoAssessmentStatus',res.message,true);
+  }).withFailureHandler(e=>{btn.disabled=false;statusBox('promoAssessmentStatus',e.message||String(e),false);})
+    .walasSavePromotionAssessment(WALAS_TOKEN,p.year,p.month,payload,!!finalize);
+}
+
+
+/* ADMIN */
+function doAdminLogin(){
+  const btn=document.getElementById('adminLoginBtn');
+  if(btn) btn.disabled=true;
+  statusBox('adminLoginStatus','Memverifikasi Admin...',true);
+
+  google.script.run.withSuccessHandler(res=>{
+    if(btn) btn.disabled=false;
+    ADMIN_TOKEN=res.token;
+    ADMIN_MEMBERS=[];
+    ADMIN_MEMBERS_LOADED=false;
+    ADMIN_PROMO_LOADED=false;
+    CLASS_OPTIONS=res.classes||[];
+
+    document.getElementById('adminLogin').classList.add('hidden');
+    document.getElementById('adminApp').classList.remove('hidden');
+    document.getElementById('adminName').textContent='Admin: '+(res.nama||res.adminId);
+
+    loadClassSelects();
+    renderAdminTable();
+    initAdminPromotionFilters();
+
+    // Satu permintaan awal untuk dua blok paling penting.
+    loadAdminInitialOverview();
+
+    // Modul berat dimuat hanya ketika pengguna mendekati bagiannya.
+    setupAdminLazyLoading();
+  }).withFailureHandler(e=>{
+    if(btn) btn.disabled=false;
+    statusBox('adminLoginStatus',e.message||String(e),false);
+  }).adminLogin(document.getElementById('adminId').value,document.getElementById('adminPin').value);
+}
+
+function loadAdminInitialOverview(){
+  if(!ADMIN_TOKEN)return;
+
+  document.getElementById('activePeriodText').textContent='Memuat rekap periode...';
+  const pt=document.querySelector('#periodRecapTable tbody');
+  if(pt) pt.innerHTML='<tr><td colspan="6">Memuat rekap periode...</td></tr>';
+
+  const ct=document.querySelector('#classAccessTable tbody');
+  if(ct) ct.innerHTML='<tr><td colspan="7">Memuat akses kelas...</td></tr>';
+
+  google.script.run.withSuccessHandler(res=>{
+    if(res.periodRecap) renderPeriodRecap(res.periodRecap);
+
+    if(res.classAccess){
+      CLASS_ACCESS=res.classAccess.classes||[];
+      CLASS_OPTIONS=res.classAccess.options||CLASS_OPTIONS;
+      renderClassAccess();
+      loadClassSelects();
+    }
+  }).withFailureHandler(e=>{
+    statusBox('periodStatus',e.message||String(e),false);
+    statusBox('classStatus',e.message||String(e),false);
+  }).adminGetInitialOverview(ADMIN_TOKEN);
+}
+
+function setupAdminLazyLoading(){
+  if(ADMIN_LAZY_OBSERVER){
+    try{ADMIN_LAZY_OBSERVER.disconnect();}catch(e){}
+  }
+
+  if(!('IntersectionObserver' in window)){
+    // Fallback browser lama: tetap bertahap, bukan paralel.
+    setTimeout(()=>{if(!ADMIN_PROMO_LOADED) loadAdminPromotion();},300);
+    setTimeout(()=>{if(!ADMIN_MEMBERS_LOADED) loadAdminMembers();},900);
+    return;
+  }
+
+  ADMIN_LAZY_OBSERVER=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting)return;
+
+      if(entry.target.id==='adminPromoSection' && !ADMIN_PROMO_LOADED){
+        ADMIN_PROMO_LOADED=true;
+        loadAdminPromotion();
+      }
+      if(entry.target.id==='adminMemberSection' && !ADMIN_MEMBERS_LOADED){
+        ADMIN_MEMBERS_LOADED=true;
+        loadAdminMembers();
+      }
+    });
+  },{root:null,rootMargin:'350px 0px',threshold:0.01});
+
+  const promo=document.getElementById('adminPromoSection');
+  const members=document.getElementById('adminMemberSection');
+  if(promo) ADMIN_LAZY_OBSERVER.observe(promo);
+  if(members) ADMIN_LAZY_OBSERVER.observe(members);
+}
+
+function loadAdminMembers(){
+  if(!ADMIN_TOKEN)return;
+  ADMIN_MEMBERS_LOADED=true;
+  const tb=document.querySelector('#adminTable tbody');
+  if(tb) tb.innerHTML='<tr><td colspan="11">Memuat data anggota...</td></tr>';
+
+  google.script.run.withSuccessHandler(res=>{
+    ADMIN_MEMBERS=res.members||[];
+    if(res.classes&&res.classes.length){
+      CLASS_OPTIONS=res.classes;
+      loadClassSelects();
+    }
+    renderAdminTable();
+  }).withFailureHandler(e=>{
+    if(tb) tb.innerHTML='<tr><td colspan="11">Gagal memuat data anggota: '+esc(e.message||String(e))+'</td></tr>';
+  }).adminListMembers(ADMIN_TOKEN);
+}
+
+function openAdminPin(){
+  ['adminOldPin','adminNewPin','adminConfirmPin'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('adminPinStatus').style.display='none';
+  document.getElementById('adminPinCard').classList.remove('hidden');
+  document.getElementById('adminPinCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeAdminPin(){document.getElementById('adminPinCard').classList.add('hidden');}
+function changeAdminPin(){
+  statusBox('adminPinStatus','Mengubah PIN Admin...',true);
+  google.script.run.withSuccessHandler(res=>{
+    statusBox('adminPinStatus',res.message,true);
+    setTimeout(()=>location.reload(),1200);
+  }).withFailureHandler(e=>statusBox('adminPinStatus',e.message||String(e),false))
+    .adminChangeOwnPin(ADMIN_TOKEN,document.getElementById('adminOldPin').value,document.getElementById('adminNewPin').value,document.getElementById('adminConfirmPin').value);
+}
+
+function loadPeriodRecap(){
+  google.script.run.withSuccessHandler(renderPeriodRecap)
+    .withFailureHandler(e=>statusBox('periodStatus',e.message||String(e),false))
+    .adminGetActivePeriodRecap(ADMIN_TOKEN);
+}
+function renderPeriodRecap(res){
+  document.getElementById('activePeriodText').textContent='Periode aktif saat ini: '+(res.period||'-');
+  const monthSel=document.getElementById('periodMonth');
+  if(!monthSel.options.length){(res.months||[]).forEach(m=>monthSel.add(new Option(m,m)));}
+  if(res.month) monthSel.value=res.month;
+  document.getElementById('periodYear').value=res.year||new Date().getFullYear();
+  const s=res.summary||{};
+  document.getElementById('statActiveClasses').textContent=s.activeClasses||0;
+  document.getElementById('statActiveMembers').textContent=s.activeMembers||0;
+  document.getElementById('statEvaluated').textContent=s.evaluatedMembers||0;
+  document.getElementById('statCompleteClasses').textContent=s.completeClasses||0;
+  document.getElementById('statIncompleteClasses').textContent=s.incompleteClasses||0;
+  const tb=document.querySelector('#periodRecapTable tbody');tb.innerHTML='';
+  (res.rows||[]).forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${esc(r.kelas)}</td><td>${esc(r.walas||'-')}</td><td>${r.activeMembers||0}</td><td>${r.evaluated||0}</td><td>${r.percent||0}%</td><td><b>${esc(r.status)}</b></td>`;
+    tb.appendChild(tr);
+  });
+  if(!(res.rows||[]).length) tb.innerHTML='<tr><td colspan="6">Belum ada kelas aktif.</td></tr>';
+}
+function setActivePeriod(){
+  if(!confirm('Ubah periode aktif? Evaluasi berikutnya akan disimpan ke periode yang dipilih.')) return;
+  statusBox('periodStatus','Mengubah periode aktif...',true);
+  google.script.run.withSuccessHandler(res=>{
+    renderPeriodRecap(res);statusBox('periodStatus','Periode aktif berhasil diperbarui menjadi '+res.period+'.',true);
+  }).withFailureHandler(e=>statusBox('periodStatus',e.message||String(e),false))
+    .adminSetActivePeriod(ADMIN_TOKEN,document.getElementById('periodMonth').value,document.getElementById('periodYear').value);
+}
+
+function classKey(k){return String(k||'').replace(/[^A-Za-z0-9]/g,'_');}
+function loadClassAccess(){
+  google.script.run.withSuccessHandler(res=>{
+    CLASS_ACCESS=res.classes||[];renderClassAccess();
+  }).withFailureHandler(e=>statusBox('classStatus',e.message||String(e),false))
+    .adminGetClassAccess(ADMIN_TOKEN);
+}
+function renderClassAccess(){
+  const tb=document.querySelector('#classAccessTable tbody');tb.innerHTML='';
+  CLASS_ACCESS.forEach(r=>{
+    const k=classKey(r.kelas);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><b>${esc(r.kelas)}</b></td>
+      <td><input id="cw_${k}" value="${esc(r.walas||'')}"></td>
+      <td><input id="ce_${k}" type="email" value="${esc(r.email||'')}"></td>
+      <td style="text-align:center"><input id="ca_${k}" type="checkbox" style="width:auto" ${r.active?'checked':''}></td>
+      <td style="text-align:center">${r.activeMemberCount||0}</td>
+      <td>${r.pinConfigured?'✓ Tersedia':'Belum dibuat'}</td>
+      <td><div class="access-actions">
+        <button class="ghost" onclick="saveClass('${esc(r.kelas)}')">Simpan</button>
+        <button class="admin" onclick="generateClassPin('${esc(r.kelas)}')">Generate/Reset PIN</button>
+        <button class="secondary" onclick="openAsWalas('${esc(r.kelas)}')">Buka sebagai Walas</button>
+      </div></td>`;
+    tb.appendChild(tr);
+  });
+}
+function addClass(){
+  const data={kelas:document.getElementById('newClassCode').value,walas:document.getElementById('newClassWalas').value,email:document.getElementById('newClassEmail').value};
+  statusBox('classStatus','Menambahkan kelas...',true);
+  google.script.run.withSuccessHandler(res=>{
+    CLASS_ACCESS=res.classes||[];CLASS_OPTIONS=res.options||[];renderClassAccess();loadClassSelects();loadPublicClasses();loadPeriodRecap();
+    document.getElementById('newClassCode').value='';document.getElementById('newClassWalas').value='';document.getElementById('newClassEmail').value='';
+    statusBox('classStatus',res.message,true);
+  }).withFailureHandler(e=>statusBox('classStatus',e.message||String(e),false)).adminAddClass(ADMIN_TOKEN,data);
+}
+function saveClass(kelas){
+  const k=classKey(kelas);
+  statusBox('classStatus','Menyimpan '+kelas+'...',true);
+  google.script.run.withSuccessHandler(res=>{
+    CLASS_ACCESS=res.classes||[];CLASS_OPTIONS=res.options||[];renderClassAccess();loadClassSelects();loadPublicClasses();
+    statusBox('classStatus',res.message,true);
+  }).withFailureHandler(e=>statusBox('classStatus',e.message||String(e),false))
+    .adminUpdateClass(ADMIN_TOKEN,kelas,document.getElementById('cw_'+k).value,document.getElementById('ce_'+k).value,document.getElementById('ca_'+k).checked);
+}
+function openAsWalas(kelas){
+  statusBox('classStatus','Membuka Portal Walas '+kelas+' sebagai Admin...',true);
+  google.script.run
+    .withSuccessHandler(res=>{
+      document.getElementById('classStatus').style.display='none';
+      enterWalasApp(res,true);
+      window.scrollTo({top:0,behavior:'smooth'});
+    })
+    .withFailureHandler(e=>statusBox('classStatus',e.message||String(e),false))
+    .adminOpenAsWalas(ADMIN_TOKEN,kelas);
+}
+
+function generateClassPin(kelas){
+  if(!confirm('Generate/Reset PIN untuk '+kelas+'? PIN lama akan langsung tidak berlaku.')) return;
+  google.script.run.withSuccessHandler(res=>{
+    statusBox('classStatus','PIN baru '+res.kelas+': '+res.pin+' — salin dan kirim secara aman. PIN ini hanya ditampilkan sekali.',true);
+    loadClassAccess();
+  }).withFailureHandler(e=>statusBox('classStatus',e.message||String(e),false)).adminGenerateClassPin(ADMIN_TOKEN,kelas);
+}
+
+function loadClassSelects(){
+  const filter=document.getElementById('filterClass');
+  const modal=document.getElementById('mKelas');
+  filter.innerHTML='<option value="">Semua kelas</option>';
+  modal.innerHTML='';
+  const ae=document.getElementById('adminEvalClass'); if(ae) ae.innerHTML='<option value="">Semua kelas</option>';
+  const ap=document.getElementById('adminPromoClass'); if(ap) ap.innerHTML='<option value="">Semua kelas</option>';
+  CLASS_OPTIONS.forEach(c=>{
+    const o1=document.createElement('option');o1.value=c.kelas;o1.textContent=c.kelas+' — '+c.walas+(c.active===false?' (Tidak Aktif)':'');filter.appendChild(o1);
+    const o2=document.createElement('option');o2.value=c.kelas;o2.textContent=c.kelas+' — '+c.walas+(c.active===false?' (Tidak Aktif)':'');modal.appendChild(o2);
+    const ae=document.getElementById('adminEvalClass');
+    if(ae){const o3=document.createElement('option');o3.value=c.kelas;o3.textContent=c.kelas+' — '+c.walas+(c.active===false?' (Tidak Aktif)':'');ae.appendChild(o3);}
+    const ap=document.getElementById('adminPromoClass');
+    if(ap){const o4=document.createElement('option');o4.value=c.kelas;o4.textContent=c.kelas+' — '+c.walas+(c.active===false?' (Tidak Aktif)':'');ap.appendChild(o4);}
+  });
+}
+function renderAdminTable(){
+  const q=(document.getElementById('searchMember').value||'').toLowerCase();
+  const fc=document.getElementById('filterClass').value;
+  const tb=document.querySelector('#adminTable tbody');tb.innerHTML='';
+  ADMIN_MEMBERS.filter(m=>{
+    const matches=(!q)||(m.nama.toLowerCase().includes(q))||(m.nopung.includes(q));
+    const klass=(!fc)||(m.kelas===fc);
+    return matches&&klass;
+  }).forEach(m=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${esc(m.nopung)}</td><td>${esc(m.kelas)}</td><td>${esc(m.nama)}</td>
+      <td>${esc(m.tanggalLahir||'-')}</td><td>${esc(m.tahunPelantikan||'-')}</td>
+      <td>${esc(m.fakultas||'-')}</td><td>${esc(m.angkatan||'-')}</td><td>${esc(m.keterangan||'-')}</td>
+      <td>${esc(m.walas||'-')}</td><td><b>${esc(m.status)}</b></td>
+      <td>
+        <button class="ghost" onclick='openEditModal(${JSON.stringify(m)})'>Edit</button>
+        <button onclick="setStatus('${esc(m.nopung)}','Tidak Aktif')">Tidak Aktif</button>
+        <button class="secondary" onclick="setStatus('${esc(m.nopung)}','Mutasi')">Mutasi</button>
+        <button class="danger" onclick="deleteMember('${esc(m.nopung)}','${esc(m.nama)}')">Hapus</button>
+      </td>`;
+    tb.appendChild(tr);
+  });
+}
+function openAddModal(){
+  EDIT_MODE='add';
+  document.getElementById('modalTitle').textContent='Tambah Anggota';
+  document.getElementById('originalNopung').value='';
+  ['mNopung','mNama','mTanggalLahir','mTahunPelantikan','mFakultas','mAngkatan'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mKeterangan').value='';
+  document.getElementById('mStatus').value='Aktif';
+  if(CLASS_OPTIONS.length)document.getElementById('mKelas').value=CLASS_OPTIONS[0].kelas;
+  document.getElementById('memberModal').classList.add('show');
+}
+function openEditModal(m){
+  EDIT_MODE='edit';
+  document.getElementById('modalTitle').textContent='Edit / Mutasi Anggota';
+  document.getElementById('originalNopung').value=m.nopung;
+  document.getElementById('mNopung').value=m.nopung;
+  document.getElementById('mKelas').value=m.kelas;
+  document.getElementById('mNama').value=m.nama;
+  document.getElementById('mTanggalLahir').value=m.tanggalLahir||'';
+  document.getElementById('mTahunPelantikan').value=m.tahunPelantikan||'';
+  document.getElementById('mFakultas').value=m.fakultas||'';
+  document.getElementById('mAngkatan').value=m.angkatan||'';
+  document.getElementById('mKeterangan').value=m.keterangan||'';
+  document.getElementById('mStatus').value=m.status||'Aktif';
+  document.getElementById('memberModal').classList.add('show');
+}
+function closeModal(){document.getElementById('memberModal').classList.remove('show');}
+function memberPayload(){
+  return {
+    nopung:document.getElementById('mNopung').value,
+    kelas:document.getElementById('mKelas').value,
+    nama:document.getElementById('mNama').value,
+    tanggalLahir:document.getElementById('mTanggalLahir').value,
+    tahunPelantikan:document.getElementById('mTahunPelantikan').value,
+    fakultas:document.getElementById('mFakultas').value,
+    angkatan:document.getElementById('mAngkatan').value,
+    keterangan:document.getElementById('mKeterangan').value,
+    status:document.getElementById('mStatus').value
+  };
+}
+function saveMember(){
+  const p=memberPayload();
+  const ok=res=>{ADMIN_MEMBERS=res.members||ADMIN_MEMBERS;closeModal();renderAdminTable();statusBox('adminStatus',res.message,true);};
+  const fail=e=>statusBox('adminStatus',e.message||String(e),false);
+  if(EDIT_MODE==='add'){
+    google.script.run.withSuccessHandler(ok).withFailureHandler(fail).adminAddMember(ADMIN_TOKEN,p);
+  }else{
+    google.script.run.withSuccessHandler(ok).withFailureHandler(fail)
+      .adminUpdateMember(ADMIN_TOKEN,document.getElementById('originalNopung').value,p);
+  }
+}
+function setStatus(nopung,status){
+  if(!confirm('Ubah status '+nopung+' menjadi '+status+'?'))return;
+  google.script.run.withSuccessHandler(res=>{
+    ADMIN_MEMBERS=res.members||ADMIN_MEMBERS;renderAdminTable();statusBox('adminStatus',res.message,true);
+  }).withFailureHandler(e=>statusBox('adminStatus',e.message||String(e),false))
+    .adminSetMemberStatus(ADMIN_TOKEN,nopung,status);
+}
+function showAdminResults(){
+  document.getElementById('adminResultView').classList.remove('hidden');
+  loadAdminResults();
+  document.getElementById('adminResultView').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function hideAdminResults(){document.getElementById('adminResultView').classList.add('hidden');}
+function loadAdminResults(){
+  const kelas=document.getElementById('adminEvalClass').value;
+  document.getElementById('adminSummary').textContent='Memuat hasil evaluasi...';
+  google.script.run.withSuccessHandler(res=>{
+    document.getElementById('adminResultPeriod').textContent='Periode aktif: '+res.period+(kelas?' | Kelas: '+kelas:' | Semua kelas');
+    const x=res.summary||{};
+    document.getElementById('adminSummary').innerHTML='<b>Rekap:</b> Total evaluasi '+(x.total||0)+' | Membina Sudah '+(x.membinaSudah||0)+' | Belum '+(x.membinaBelum||0)+' | Total Binaan L1 '+(x.binaanL1||0)+' | L2 '+(x.binaanL2||0)+' | Potensi: Sudah '+(x.potensiSudah||0)+', Belum '+(x.potensiBelum||0)+', Perlu Pembahasan '+(x.potensiPerlu||0);
+    const tb=document.querySelector('#adminResultTable tbody');tb.innerHTML='';
+    (res.rows||[]).forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${esc(r.kelas)}</td><td>${esc(r.nopung)}</td><td>${esc(r.nama)}</td><td>${esc(r.status||'-')}</td><td>${esc(r.membina||'-')}</td><td>${esc(r.jumlahBinaanL1===''?'-':r.jumlahBinaanL1)}</td><td>${esc(r.jumlahBinaanL2===''?'-':r.jumlahBinaanL2)}</td><td>${esc(r.potensi||'-')}</td><td>${esc(r.amanahDki2||'-')}</td><td>${esc(r.amanahLuar||'-')}</td><td>${esc(r.catatan||'-')}</td><td>${esc(r.timestamp||'-')}</td>`;
+      tb.appendChild(tr);
+    });
+    if(!(res.rows||[]).length){tb.innerHTML='<tr><td colspan="12">Belum ada hasil evaluasi untuk filter ini.</td></tr>';}
+  }).withFailureHandler(e=>{document.getElementById('adminSummary').textContent='Error: '+(e.message||String(e));})
+    .adminGetEvaluationResults(ADMIN_TOKEN,kelas);
+}
+
+
+function initAdminPromotionFilters(){
+  const m=document.getElementById('adminPromoMonth');if(!m)return;
+  if(!m.options.length){
+    ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'].forEach(x=>m.add(new Option(x,x)));
+  }
+  const d=new Date();document.getElementById('adminPromoYear').value=d.getFullYear();m.selectedIndex=d.getMonth();
+}
+function loadAdminPromotion(){
+  if(!ADMIN_TOKEN)return;
+  ADMIN_PROMO_LOADED=true;
+  const year=Number(document.getElementById('adminPromoYear').value),month=document.getElementById('adminPromoMonth').value;
+  const kelas=document.getElementById('adminPromoClass').value,status=document.getElementById('adminPromoStatus').value;
+  statusBox('adminPromoStatusBox','Memuat dashboard promosi...',true);
+  google.script.run.withSuccessHandler(res=>{
+    const s=res.summary||{};
+    document.getElementById('adminPromoClasses').textContent=s.classes||0;
+    document.getElementById('adminPromoPriority').textContent=s.priority||0;
+    document.getElementById('adminPromoNotStarted').textContent=s.notStarted||0;
+    document.getElementById('adminPromoDraft').textContent=s.draft||0;
+    document.getElementById('adminPromoFinal').textContent=(s.final||0)+(s.locked||0);
+    document.getElementById('adminPromoRevision').textContent=s.revision||0;
+    const tb=document.querySelector('#adminPromoTable tbody');tb.innerHTML='';
+    (res.rows||[]).forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${esc(r.kelas)}</td><td>${esc(r.walas||'-')}</td><td>${esc(r.nopung)}</td><td><b>${esc(r.nama)}</b></td>
+        <td>${esc(r.potensi||'Belum')}</td><td>${promoBadge(r.status)}</td><td>${Number(r.progress)||0}/33</td>
+        <td>${r.total===''?'-':r.total+'/132'}</td><td>${r.percent===''?'-':r.percent+'%'}</td><td>${esc(r.result||'-')}</td>
+        <td>${r.hasCancel?'<span class="badge danger">Teridentifikasi</span>':'-'}</td><td>${esc(r.updatedAt||'-')}</td>
+        <td><button class="ghost" onclick="openAdminPromotionDetail('${esc(r.kelas)}','${esc(r.nopung)}')">Detail</button></td>`;
+      tb.appendChild(tr);
+    });
+    if(!(res.rows||[]).length)tb.innerHTML='<tr><td colspan="13">Tidak ada data pada filter ini.</td></tr>';
+    clearStatus('adminPromoStatusBox');
+  }).withFailureHandler(e=>statusBox('adminPromoStatusBox',e.message||String(e),false))
+    .adminGetPromotionDashboard(ADMIN_TOKEN,year,month,kelas,status);
+}
+function openAdminPromotionDetail(kelas,nopung){
+  const year=Number(document.getElementById('adminPromoYear').value),month=document.getElementById('adminPromoMonth').value;
+  google.script.run.withSuccessHandler(a=>{
+    ADMIN_PROMO_DETAIL=a;
+    document.getElementById('adminPromoDetailMeta').textContent=a.kelas+' | '+a.nama+' | '+a.nopung+' | '+a.period+' | '+promoPlainStatus(a.status);
+    const body=document.getElementById('adminPromoDetailBody');body.innerHTML='';
+    let dim='';
+    (a.rubric||[]).forEach(r=>{
+      if(r.dimensi!==dim){const d=document.createElement('div');d.className='dimension-title';d.textContent=r.dimensi;body.appendChild(d);dim=r.dimensi;}
+      const x=document.createElement('div');x.className='rubric-item';
+      x.innerHTML=`<div class="rubric-code">${esc(r.kode)} • Indikator ${r.no}</div><div class="rubric-title">${esc(r.indikator)}</div>
+        <div style="margin-top:8px"><b>Skor Walas:</b> ${r.score||'-'} ${r.score?('— '+['','Terbatas','Berkembang','Baik','Teladan'][r.score]):''}</div>
+        <div class="muted" style="margin-top:5px"><b>Catatan:</b> ${esc(r.comment||'-')}</div>`;
+      body.appendChild(x);
+    });
+    const selected=(a.cancelFactors||[]).map(Number);
+    document.getElementById('adminPromoSensitive').innerHTML='<b>Pemeriksaan Pembatal Kelulusan</b><br>'+
+      (selected.length?selected.map(i=>esc(i+'. '+a.cancelRules[i-1])).join('<br>'):'Tidak ada faktor pembatal yang ditandai.')+
+      '<br><br><b>Catatan Akhir Walas:</b> '+esc(a.finalNote||'-')+
+      '<br><b>Hasil:</b> '+esc(a.result||'-')+' | <b>Total:</b> '+(a.total===''?'-':a.total+'/132')+' | <b>Capaian:</b> '+(a.percent===''?'-':a.percent+'%');
+    document.getElementById('adminPromoReopenBtn').disabled=!a.assessmentId||a.status==='Belum Dimulai';
+    document.getElementById('adminPromoLockBtn').disabled=!a.assessmentId||Number(a.progress)!==33||a.status==='Dikunci';
+    document.getElementById('adminPromoDetail').classList.remove('hidden');
+    document.getElementById('adminPromoDetail').scrollIntoView({behavior:'smooth',block:'start'});
+  }).withFailureHandler(e=>statusBox('adminPromoStatusBox',e.message||String(e),false))
+    .adminGetPromotionAssessment(ADMIN_TOKEN,year,month,kelas,nopung);
+}
+function closeAdminPromoDetail(){ADMIN_PROMO_DETAIL=null;document.getElementById('adminPromoDetail').classList.add('hidden');}
+function adminRequestPromoRevision(){
+  if(!ADMIN_PROMO_DETAIL||!ADMIN_PROMO_DETAIL.assessmentId)return;
+  const reason=prompt('Tuliskan alasan revisi yang akan dilihat Walas:');
+  if(!reason)return;
+  google.script.run.withSuccessHandler(res=>{
+    statusBox('adminPromoDetailStatus',res.message,true);loadAdminPromotion();closeAdminPromoDetail();
+  }).withFailureHandler(e=>statusBox('adminPromoDetailStatus',e.message||String(e),false))
+    .adminReopenPromotion(ADMIN_TOKEN,ADMIN_PROMO_DETAIL.assessmentId,reason);
+}
+function adminLockPromo(){
+  if(!ADMIN_PROMO_DETAIL||!ADMIN_PROMO_DETAIL.assessmentId)return;
+  if(!confirm('Kunci penilaian promosi ini? Setelah dikunci Walas tidak dapat mengubahnya.'))return;
+  google.script.run.withSuccessHandler(res=>{
+    statusBox('adminPromoStatusBox',res.message,true);loadAdminPromotion();closeAdminPromoDetail();
+  }).withFailureHandler(e=>statusBox('adminPromoDetailStatus',e.message||String(e),false))
+    .adminLockPromotion(ADMIN_TOKEN,ADMIN_PROMO_DETAIL.assessmentId);
+}
+
+
+function deleteMember(nopung,nama){
+  if(!confirm('HAPUS PERMANEN '+nama+' ('+nopung+')?\n\nHanya dapat dilakukan jika belum ada riwayat evaluasi.'))return;
+  google.script.run.withSuccessHandler(res=>{
+    ADMIN_MEMBERS=res.members||ADMIN_MEMBERS;renderAdminTable();statusBox('adminStatus',res.message,true);
+  }).withFailureHandler(e=>statusBox('adminStatus',e.message||String(e),false))
+    .adminDeleteMember(ADMIN_TOKEN,nopung);
+}
+</script>
+<script>
+function unifiedExit(){
+  try{
+    sessionStorage.removeItem('dki2_unified_walas_session');
+    sessionStorage.removeItem('dki2_unified_admin_session');
+  }catch(_){}
+  location.href='./';
+}
+function restoreUnifiedPortalSession(){
+  const params=new URLSearchParams(location.search);
+  const mode=params.get('mode');
+  if(mode==='walas'){
+    try{
+      const raw=sessionStorage.getItem('dki2_unified_walas_session');
+      if(!raw) return;
+      const res=JSON.parse(raw);
+      if(!res||!res.token||!res.kelas) return;
+      if(!Array.isArray(res.months)||!res.months.length) res.months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      if(!res.activeYear) res.activeYear=new Date().getFullYear();
+      if(!res.activeMonth) res.activeMonth=res.months[new Date().getMonth()];
+      switchRole('walas'); enterWalasApp(res,false); window.scrollTo({top:0}); return;
+    }catch(e){console.error('Gagal memulihkan sesi Walas',e);}
+  }
+  if(mode==='admin'){
+    try{
+      const raw=sessionStorage.getItem('dki2_unified_admin_session');
+      if(!raw) return;
+      const res=JSON.parse(raw);
+      if(!res||!res.token) return;
+      switchRole('admin');
+      ADMIN_TOKEN=res.token; ADMIN_MEMBERS=[]; ADMIN_MEMBERS_LOADED=false; ADMIN_PROMO_LOADED=false; CLASS_OPTIONS=res.classes||[];
+      document.getElementById('adminLogin').classList.add('hidden');
+      document.getElementById('adminApp').classList.remove('hidden');
+      document.getElementById('adminName').textContent='Admin: '+(res.nama||res.adminId||'ADMIN');
+      loadClassSelects(); renderAdminTable(); initAdminPromotionFilters(); loadAdminInitialOverview(); setupAdminLazyLoading(); window.scrollTo({top:0}); return;
+    }catch(e){console.error('Gagal memulihkan sesi Admin',e);}
+  }
+}
+window.addEventListener('DOMContentLoaded',()=>setTimeout(restoreUnifiedPortalSession,0));
+</script>
+
+</body>
+</html>
