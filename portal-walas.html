@@ -1464,7 +1464,15 @@ function deleteMember(nopung,nama){
 <script>
 function backToMonitoring(){
   const mode=new URLSearchParams(location.search).get('mode');
-  location.href='./'+(mode?'?resume='+encodeURIComponent(mode):'');
+  if(mode==='admin'){
+    location.href='./admin.html?resume=admin';
+    return;
+  }
+  if(mode==='walas'){
+    location.href='./?resume=walas';
+    return;
+  }
+  location.href='./';
 }
 
 function unifiedExit(){
