@@ -252,7 +252,7 @@ window.saveSecretaryReport=async function(){
 window.walasLogin=async function(){
  clearStatus('walasLoginStatus');try{
   const d=await rpc('legacy_walas_login',{p_class:document.getElementById('walasClass').value,p_pin:document.getElementById('walasPin').value});
-  walasToken=d.token;walasClass=d.kelas;document.getElementById('loginCard').classList.add('hidden');document.getElementById('walasApp').classList.remove('hidden');
+  walasToken=d.token;walasClass=d.kelas;sessionStorage.setItem('dki2_unified_walas_session',JSON.stringify(d));document.getElementById('loginCard').classList.add('hidden');document.getElementById('walasApp').classList.remove('hidden');
   document.getElementById('walasTitle').textContent='Walas '+d.kelas+(d.walas?' — '+d.walas:'');loadWalasMonitor();
  }catch(e){status('walasLoginStatus',e.message,false)}
 }
@@ -285,8 +285,8 @@ window.loadWalasMonitor=async function(){
 window.adminLogin=async function(){
  clearStatus('adminLoginStatus');try{
   const d=await rpc('legacy_admin_login',{p_admin:document.getElementById('adminId').value,p_pin:document.getElementById('adminPin').value});
-  adminToken=d.token;document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
-  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();loadSecretaryCandidates();
+  adminToken=d.token;sessionStorage.setItem('dki2_unified_admin_session',JSON.stringify(d));document.getElementById('loginCard').classList.add('hidden');document.getElementById('adminApp').classList.remove('hidden');
+  document.getElementById('adminTitle').textContent='Admin — '+(d.nama||d.adminId||'ADMIN');loadAdminDashboard();loadAccountRequests();loadBClassBaseline();if(document.getElementById('adminDesignateClass'))loadSecretaryCandidates();loadSecretaryCandidates();
  }catch(e){status('adminLoginStatus',e.message,false)}
 }
 window.loadAdminDashboard=async function(){
@@ -347,6 +347,30 @@ window.closeAdminDetail=function(){
  document.getElementById('adminDetailPanel').classList.add('hidden');
 }
 
+
+
+window.loadBClassBaseline=async function(){
+ const rowsEl=document.getElementById('adminBBaselineRows');
+ const sumEl=document.getElementById('adminBBaselineSummary');
+ if(!rowsEl||!sumEl) return;
+ clearStatus('adminBBaselineStatus');
+ try{
+   const d=await rpc('admin_b_class_baseline_v2',{p_admin_token:adminToken});
+   sumEl.innerHTML=`<b>Target:</b> ${d.targetTotal||0} anggota &nbsp;•&nbsp; <b>Sudah termigrasi:</b> ${d.migratedTotal||0} &nbsp;•&nbsp; <b>Sisa:</b> ${d.remainingTotal||0} &nbsp;•&nbsp; Baseline: ${esc(d.baselineDate||'2026-09-26')}`;
+   rowsEl.innerHTML=(d.rows||[]).map(r=>`<tr>
+     <td><b>${esc(r.kelas)}</b></td>
+     <td>${esc(r.kelompok)}</td>
+     <td>${r.targetMembers}</td>
+     <td>${r.migratedActiveMembers}</td>
+     <td>${r.remainingMembers===0?dot(true,'0',''):dot(false,'',String(r.remainingMembers))}</td>
+     <td>${r.walasPinReady?dot(true,'Siap',''):dot(false,'','Belum')}</td>
+     <td>${r.secretaryDesignated?dot(true,'Ditetapkan',''):dot(false,'','Belum')}</td>
+     <td>${r.execOffline}/${r.execOnline}/${r.execTatsqif}</td>
+     <td>${r.attendanceGt80}</td>
+     <td>${r.yaumiyahJuly}/${r.yaumiyahAugust}/${r.yaumiyahSeptember}</td>
+   </tr>`).join('');
+ }catch(e){status('adminBBaselineStatus',e.message,false)}
+}
 
 window.loadSecretaryCandidates=async function(){
  clearStatus('adminDesignateStatus');
@@ -420,3 +444,12 @@ window.rejectAccountRequest=async function(id){
 }
 
 await init();
+
+window.openFullWalasPortal=function(){
+  if(!walasToken){status('walasStatus','Sesi Walas tidak tersedia. Silakan login kembali.',false);return;}
+  location.href='./portal-walas.html?mode=walas';
+}
+window.openFullAdminPortal=function(){
+  if(!adminToken){status('adminStatus','Sesi Admin tidak tersedia. Silakan login kembali.',false);return;}
+  location.href='./portal-walas.html?mode=admin';
+}
