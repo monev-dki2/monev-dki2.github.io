@@ -223,10 +223,21 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
     <div class="card">
       <div class="actions" style="justify-content:space-between">
         <div><h2 id="adminTitle">Admin</h2><div class="muted">Dashboard integrasi</div></div>
-        <div class="actions"><button onclick="openFullAdminPortal()">Kelola Evaluasi & Data Master</button><button class="light" onclick="location.reload()">Keluar</button></div>
+        <div class="actions"><button class="light" onclick="location.reload()">Keluar</button></div>
       </div>
     </div>
     <div class="card">
+      <div class="tabs" id="adminMenuTabs">
+        <button id="adminMenuMonitoring" class="active" onclick="switchAdminMenu('monitoring')">Monitoring</button>
+        <button id="adminMenuClassB" onclick="switchAdminMenu('classb')">Kelas B</button>
+        <button id="adminMenuSecretary" onclick="switchAdminMenu('secretary')">Sekretaris</button>
+        <button id="adminMenuRequests" onclick="switchAdminMenu('requests')">Permintaan Akun</button>
+        <button id="adminMenuMaster" onclick="openFullAdminPortal()">Evaluasi & Data Master</button>
+      </div>
+      <div class="muted" style="margin-top:8px">Pilih modul Admin. Isi dan fungsi setiap modul tetap sama.</div>
+    </div>
+
+    <div id="adminSectionMonitoring">    <div class="card">
       <div class="row">
         <div class="field"><label>Bulan</label><select id="adminMonth"></select></div>
         <div class="field"><label>Tahun</label><input id="adminYear" type="number"></div>
@@ -262,7 +273,8 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       </div>
 </div>
     </div>
-    <div class="card">
+</div>
+    <div id="adminSectionClassB" class="hidden">    <div class="card">
       <div class="actions" style="justify-content:space-between;align-items:center">
         <div>
           <h3 style="margin-bottom:4px">Migrasi Kelas B</h3>
@@ -286,7 +298,8 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       </div>
     </div>
 
-    <div class="card">
+</div>
+    <div id="adminSectionSecretary" class="hidden">    <div class="card">
       <h3>Tetapkan Sekretaris Kelas</h3>
       <div class="muted">Hanya Admin yang dapat menetapkan siapa Sekretaris. Penetapan tidak langsung membuat PIN; Sekretaris yang ditetapkan tetap harus mengajukan aktivasi dan memverifikasi emailnya.</div>
       <div class="row" style="margin-top:12px">
@@ -297,7 +310,8 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       <div id="adminDesignateStatus" class="status"></div>
     </div>
 
-    <div class="card">
+</div>
+    <div id="adminSectionRequests" class="hidden">    <div class="card">
       <div class="actions" style="justify-content:space-between;align-items:center">
         <div>
           <h3 style="margin-bottom:4px">Permintaan Akun</h3>
@@ -314,8 +328,8 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       </div>
     </div>
     <div class="note">Admin tidak mengetik email dan tidak melihat PIN. Pemohon memverifikasi email sendiri; setelah disetujui, PIN sementara dikirim otomatis oleh server.</div>
-  </div>
+</div>  </div>
 </div>
-<script type="module" src="./integrated.js?v=20261120-classb1"></script>
+<script type="module" src="./integrated.js?v=20261120-adminmenu1"></script>
 </body>
 </html>
