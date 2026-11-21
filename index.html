@@ -119,8 +119,25 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
     <div class="card">
       <div class="actions" style="justify-content:space-between">
         <div><h2 id="memberTitle">Yaumiyah</h2><div id="memberIdentity" class="muted"></div></div>
-        <button class="light" onclick="location.reload()">Keluar</button>
+        <div class="actions">
+          <button class="light" onclick="toggleMemberPinForm()">Ganti PIN</button>
+          <button class="light" onclick="location.reload()">Keluar</button>
+        </div>
       </div>
+    </div>
+    <div id="memberPinBox" class="card hidden">
+      <h3>Ganti PIN Anggota</h3>
+      <div class="muted" style="margin-bottom:12px">Gunakan PIN 6 digit angka yang mudah Anda ingat tetapi tidak mudah ditebak.</div>
+      <div class="row">
+        <div class="field"><label>PIN Lama</label><input id="memberOldPin" type="password" inputmode="numeric" maxlength="20" autocomplete="current-password"></div>
+        <div class="field"><label>PIN Baru</label><input id="memberNewPin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+        <div class="field"><label>Konfirmasi PIN Baru</label><input id="memberConfirmPin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button onclick="changeMemberPin()">Simpan PIN Baru</button>
+        <button class="light" onclick="toggleMemberPinForm()">Batal</button>
+      </div>
+      <div id="memberPinStatus" class="status"></div>
     </div>
     <div class="card">
       <div class="row">
@@ -209,6 +226,6 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
     </div>
   </div>
 
-  <script type="module" src="./integrated.js?v=20261121-nullfix1"></script>
+  <script type="module" src="./integrated.js?v=20261122-member-pin1"></script>
 </body>
 </html>
