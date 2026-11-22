@@ -22,7 +22,13 @@ let classes=[], memberToken='', secretaryToken='', walasToken='', adminToken='',
 function status(id,msg,ok=true){const e=document.getElementById(id);if(!e)return;e.textContent=msg;e.className='status '+(ok?'ok':'err');}
 function clearStatus(id){const e=document.getElementById(id);if(!e)return;e.textContent='';e.className='status';}
 async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw new Error(error.message||String(error));if(data&&data.ok===false)throw new Error(data.error||'Akses ditolak.');return data;}
-function fillSelect(id,vals,selected=''){const e=document.getElementById(id);if(!e)return;e.innerHTML=vals.map(v=>`<option value="${esc(v)}"${v===selected?' selected':''}>${esc(v)}</option>`).join('');}
+function fillSelect(id,vals,selected=''){
+ const e=document.getElementById(id);if(!e)return;
+ e.innerHTML=vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+ const target=(selected&&vals.includes(selected))?selected:(vals[0]||'');
+ if(target) e.value=target;
+ e.disabled=!vals.length;
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function dot(ok,labelYes='Sudah',labelNo='Belum'){
   return `<span class="status-dot ${ok?'green':'red'}"></span>${ok?labelYes:labelNo}`;
