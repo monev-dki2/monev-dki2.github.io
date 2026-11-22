@@ -13,7 +13,7 @@ h1,h2,h3{margin:0 0 8px;color:var(--teal2)} h1{font-size:26px} h2{font-size:20px
 button{border:0;border-radius:10px;background:var(--teal);color:#fff;padding:10px 14px;font-weight:700;cursor:pointer} button.light{background:#e3f1ef;color:var(--dark);border:1px solid #b9d9d4}
 button.secondary{background:#155e75} button.danger{background:#b91c1c} button:disabled{opacity:.55;cursor:not-allowed}
 .hidden{display:none!important}.row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;align-items:end}.field{grid-column:span 4}.field.w6{grid-column:span 6}.field.w3{grid-column:span 3}
-label{display:block;font-size:13px;font-weight:700;margin-bottom:5px} input,select{width:100%;padding:10px 11px;border:1px solid #bcd5d2;border-radius:9px;background:#fff;font-size:14px}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:5px} input,select{width:100%;padding:10px 11px;border:1px solid #bcd5d2;border-radius:9px;background:#fff;color:#173b3a;font-size:14px} select{min-height:42px;color:#173b3a;background-color:#fff;-webkit-text-fill-color:#173b3a} select option{color:#173b3a;background:#fff}
 .status{display:none;margin-top:10px;padding:10px 12px;border-radius:9px;font-size:13px}.status.ok{display:block;background:#dcfce7;color:#166534}.status.err{display:block;background:#fee2e2;color:#991b1b}
 .note{background:var(--orange);border:1px solid #fdba74;padding:10px 12px;border-radius:10px;font-size:13px}.oknote{background:var(--green);border:1px solid #86efac;padding:10px 12px;border-radius:10px;font-size:13px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}.kpi{background:#f7fbfa;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}.kpi b{display:block;font-size:22px;color:var(--dark)}.kpi span{font-size:12px;color:var(--muted)}
@@ -49,7 +49,7 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
     <div id="loginMember" style="margin-top:16px">
       <h2>Login Anggota</h2>
       <div class="row">
-        <div class="field"><label>Kelas</label><select id="memberClass"></select></div>
+        <div class="field"><label>Kelas</label><select id="memberClass"><option value="">Memuat daftar kelas...</option></select></div>
         <div class="field"><label>Nopung</label><input id="memberNopung" maxlength="7" inputmode="numeric"></div>
         <div class="field"><label>PIN</label><input id="memberPin" type="password"></div>
       </div>
@@ -226,6 +226,6 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
     </div>
   </div>
 
-  <script type="module" src="./integrated.js?v=20261122-member-pin1"></script>
+  <script type="module" src="./integrated.js?v=20261122-class-select1"></script>
 </body>
 </html>
