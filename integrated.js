@@ -9,6 +9,12 @@ const WEEKLY=['Iftitah','Tilawah/Setoran Hafalan','Kalimatul Usroh','Membaca MR'
 const LU=['Jaulah Tokoh','Riyadhoh','Rihlah',"Silaturahmi ke Rumah A'dho",'Pelatihan/Seminar','Masak Bersama','Yang lain'];
 const MONTHLY=['Evaluasi Binaan & Pertumbuhan',"Evaluasi Pencapaian IDP A'dho","Evaluasi Program Kebugaran A'dho",'Tidak Ada Pembahasan Agenda Bulanan'];
 const ATT=['Hadir tepat waktu','Hadir terlambat','Tidak hadir dengan ijin Walas','Tidak hadir tanpa kabar','Sudah Mutasi'];
+const STATIC_CLASSES=[
+ 'B101','B102','B103','B104','B105','B106','B107','B108',
+ 'B201','B202','B203','B204','B205','B206',
+ 'C101','C102','C103','C104','C105','C106','C107','C108','C109','C110','C111','C112','C113','C114','C115','C116',
+ 'C201','C202','C203','C204','C205','C206','C207','C208','C209','C210','C211','C212','C213','C214'
+];
 const YOPT={
  tilawah:['Hijau ≥ 7 juz','Kuning ≥ 4 juz','Merah < 4 juz'],
  qiyamul:['Hijau > 2x','Kuning 1–2x','Merah 0'],
@@ -41,19 +47,29 @@ function setRole(role){
 window.setRole=setRole;
 
 async function init(){
+ const classIds=['memberClass','secretaryClass','walasClass','memberReqClass','secretaryReqClass','adminDesignateClass'];
+ classIds.forEach(id=>fillSelect(id,STATIC_CLASSES));
+ MONTHS.forEach(()=>{});
+ ['memberMonth','secMonth','walasMonth','adminMonth'].forEach(id=>fillSelect(id,MONTHS,MONTHS[new Date().getMonth()]));
+ const y=new Date().getFullYear();
+ ['memberYear','secYear','walasYear','adminYear'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=y;});
+ fillSelect('secExecution',EXEC); fillSelect('secNaqib',NAQIB);
+ renderChecks('weeklyAgenda','wa',WEEKLY); renderChecks('luAgenda','lu',LU); renderChecks('monthlyAgenda','ma',MONTHLY);
+ fillSelect('yTilawah',YOPT.tilawah);fillSelect('yQiyamul',YOPT.qiyamul);fillSelect('ySholat',YOPT.sholat);
+ fillSelect('yPuasa',YOPT.puasa);fillSelect('yOlahraga',YOPT.olahraga);fillSelect('yIbr',YOPT.ibr);
  try{
-   classes=await rpc('legacy_public_classes');
-   const vals=classes.map(x=>x.kelas);
-   ['memberClass','secretaryClass','walasClass','memberReqClass','secretaryReqClass','adminDesignateClass'].forEach(id=>fillSelect(id,vals));
-   MONTHS.forEach(()=>{});
-   ['memberMonth','secMonth','walasMonth','adminMonth'].forEach(id=>fillSelect(id,MONTHS,MONTHS[new Date().getMonth()]));
-   const y=new Date().getFullYear();
-   ['memberYear','secYear','walasYear','adminYear'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=y;});
-   fillSelect('secExecution',EXEC); fillSelect('secNaqib',NAQIB);
-   renderChecks('weeklyAgenda','wa',WEEKLY); renderChecks('luAgenda','lu',LU); renderChecks('monthlyAgenda','ma',MONTHLY);
-   fillSelect('yTilawah',YOPT.tilawah);fillSelect('yQiyamul',YOPT.qiyamul);fillSelect('ySholat',YOPT.sholat);
-   fillSelect('yPuasa',YOPT.puasa);fillSelect('yOlahraga',YOPT.olahraga);fillSelect('yIbr',YOPT.ibr);
- }catch(e){status('memberLoginStatus',e.message,false)}
+   const serverClasses=await rpc('legacy_public_classes');
+   if(Array.isArray(serverClasses) && serverClasses.length){
+     classes=serverClasses;
+     const vals=serverClasses.map(x=>x.kelas).filter(Boolean);
+     if(vals.length) classIds.forEach(id=>fillSelect(id,vals));
+   }else{
+     classes=STATIC_CLASSES.map(kelas=>({kelas}));
+   }
+ }catch(e){
+   classes=STATIC_CLASSES.map(kelas=>({kelas}));
+   console.warn('Daftar kelas server tidak tersedia; menggunakan daftar lokal.');
+ }
 }
 function renderChecks(holder,prefix,arr){const e=document.getElementById(holder);if(!e)return;e.innerHTML=arr.map((v,i)=>`<label class="check"><input type="checkbox" data-group="${prefix}" value="${esc(v)}"> ${esc(v)}</label>`).join('')}
 function checked(group){return [...document.querySelectorAll(`input[data-group="${group}"]:checked`)].map(x=>x.value)}
