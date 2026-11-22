@@ -130,51 +130,9 @@ window.memberLogin=async function(){
  clearStatus('memberLoginStatus'); try{
   const d=await rpc('member_login_v2',{p_class:document.getElementById('memberClass').value,p_nopung:document.getElementById('memberNopung').value,p_pin:document.getElementById('memberPin').value});
   memberToken=d.token; (()=>{const e=document.getElementById('loginCard');if(e)e.classList.add('hidden')})();const adminLoginCard=document.getElementById('adminLoginCard');if(adminLoginCard)adminLoginCard.classList.add('hidden');document.getElementById('memberApp').classList.remove('hidden');
-  document.getElementById('memberTitle').textContent='Yaumiyah — '+d.nama;document.getElementById('memberIdentity').textContent=d.kelas+' | '+d.nopung;
-  loadMemberDashboard();
-  if(d.mustChangePin){
-    toggleMemberPinForm(true);
-    status('memberPinStatus','Anda masih menggunakan PIN sementara. Silakan ganti PIN sebelum melanjutkan.',false);
-  }
+  document.getElementById('memberTitle').textContent='Yaumiyah — '+d.nama;document.getElementById('memberIdentity').textContent=d.kelas+' | '+d.nopung; loadMemberDashboard();
  }catch(e){status('memberLoginStatus',e.message,false)}
 }
-window.toggleMemberPinForm=function(forceOpen=false){
- const box=document.getElementById('memberPinBox');
- if(!box) return;
- const open=forceOpen===true ? true : box.classList.contains('hidden');
- box.classList.toggle('hidden',!open);
- if(open){
-   clearStatus('memberPinStatus');
-   const oldPin=document.getElementById('memberOldPin');
-   if(oldPin) oldPin.focus();
- }
-}
-
-window.changeMemberPin=async function(){
- clearStatus('memberPinStatus');
- try{
-   if(!memberToken) throw new Error('Sesi anggota tidak tersedia. Silakan login kembali.');
-   const oldPin=document.getElementById('memberOldPin').value.trim();
-   const newPin=document.getElementById('memberNewPin').value.trim();
-   const confirmPin=document.getElementById('memberConfirmPin').value.trim();
-   if(!oldPin) throw new Error('PIN lama wajib diisi.');
-   if(!/^\d{6}$/.test(newPin)) throw new Error('PIN baru harus terdiri dari 6 digit angka.');
-   if(newPin!==confirmPin) throw new Error('Konfirmasi PIN baru tidak sama.');
-   if(oldPin===newPin) throw new Error('PIN baru harus berbeda dari PIN lama.');
-   const d=await rpc('member_change_pin_v2',{
-     p_token:memberToken,
-     p_old_pin:oldPin,
-     p_new_pin:newPin
-   });
-   document.getElementById('memberOldPin').value='';
-   document.getElementById('memberNewPin').value='';
-   document.getElementById('memberConfirmPin').value='';
-   status('memberPinStatus',d.message||'PIN berhasil diubah.',true);
- }catch(e){
-   status('memberPinStatus',e.message,false);
- }
-}
-
 window.loadMemberDashboard=async function(){
  clearStatus('memberStatus');try{
   memberData=await rpc('member_get_yaumiyah_v2',{p_token:memberToken,p_year:Number(document.getElementById('memberYear').value),p_month:document.getElementById('memberMonth').value});
