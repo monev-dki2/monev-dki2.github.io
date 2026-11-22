@@ -120,10 +120,28 @@ a.btn{display:inline-block;text-decoration:none;background:#0f766e;color:#fff;bo
       <div class="actions" style="justify-content:space-between">
         <div><h2 id="memberTitle">Yaumiyah</h2><div id="memberIdentity" class="muted"></div></div>
         <div class="actions">
+          <button class="light" onclick="toggleMemberProfile()">Profil</button>
           <button class="light" onclick="toggleMemberPinForm()">Ganti PIN</button>
           <button class="light" onclick="location.reload()">Keluar</button>
         </div>
       </div>
+    </div>
+    <div id="memberProfileBox" class="card hidden">
+      <h3>Profil Anggota</h3>
+      <div class="muted" style="margin-bottom:12px">Perbarui data profil Anda. Nama, Nopung, dan Kelas mengikuti data utama dan tidak dapat diubah dari sini.</div>
+      <div class="row">
+        <div class="field"><label>Nama</label><input id="memberProfileName" readonly></div>
+        <div class="field"><label>Nopung</label><input id="memberProfileNopung" readonly></div>
+        <div class="field"><label>Kelas</label><input id="memberProfileClass" readonly></div>
+        <div class="field"><label>Tahun Angkatan</label><select id="memberProfileAngkatan"></select></div>
+        <div class="field"><label>Status</label><select id="memberProfileStatus"><option value="">- Pilih -</option><option>Mahasiswa</option><option>Alumni</option><option>Dosen/Tendik</option></select></div>
+        <div class="field"><label>Fakultas</label><select id="memberProfileFaculty"></select></div>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button onclick="saveMemberProfile()">Simpan Profil</button>
+        <button class="light" onclick="toggleMemberProfile()">Tutup</button>
+      </div>
+      <div id="memberProfileStatusMsg" class="status"></div>
     </div>
     <div id="memberPinBox" class="card hidden">
       <h3>Ganti PIN Anggota</h3>
