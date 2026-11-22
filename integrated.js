@@ -1,7 +1,4 @@
-const SUPABASE_URL='https://doovdbzqlbwxckkydfwg.supabase.co';
-const SUPABASE_KEY='sb_publishable_gw4WQtfPZ4xtbcduTfAlSA_qLDPVTNK';
-const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-const sb=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const PORTAL_API='https://doovdbzqlbwxckkydfwg.supabase.co/functions/v1/portal-api';
 const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const EXEC=['Terlaksana Offline','Terlaksana Online','Digantikan Tatsqif','Tidak Terlaksana'];
 const NAQIB=['Hadir Offline','Hadir Online','Tidak Hadir','Terlambat lebih dari 15 menit'];
@@ -21,7 +18,19 @@ let classes=[], memberToken='', secretaryToken='', walasToken='', adminToken='',
 
 function status(id,msg,ok=true){const e=document.getElementById(id);if(!e)return;e.textContent=msg;e.className='status '+(ok?'ok':'err');}
 function clearStatus(id){const e=document.getElementById(id);if(!e)return;e.textContent='';e.className='status';}
-async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw new Error(error.message||String(error));if(data&&data.ok===false)throw new Error(data.error||'Akses ditolak.');return data;}
+async function portalCall(kind,name,payload={}){
+ const res=await fetch(PORTAL_API,{
+   method:'POST',
+   headers:{'Content-Type':'text/plain;charset=UTF-8'},
+   body:JSON.stringify({kind,name,payload})
+ });
+ let data=null;
+ try{data=await res.json()}catch(_){}
+ if(!res.ok) throw new Error(data?.error||data?.message||`Permintaan gagal (${res.status}).`);
+ if(data&&data.ok===false) throw new Error(data.error||'Akses ditolak.');
+ return data;
+}
+async function rpc(name,args={}){return portalCall('rpc',name,args);}
 function fillSelect(id,vals,selected=''){const e=document.getElementById(id);if(!e)return;e.innerHTML=vals.map(v=>`<option value="${esc(v)}"${v===selected?' selected':''}>${esc(v)}</option>`).join('');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function dot(ok,labelYes='Sudah',labelNo='Belum'){
@@ -79,17 +88,7 @@ function safeActivationError(message,type){
  return raw || 'Permintaan belum dapat diproses.';
 }
 
-async function callEdge(name,payload){
- const res=await fetch(`${SUPABASE_URL}/functions/v1/${name}`,{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify(payload)
- });
- let data={};
- try{data=await res.json()}catch(_){}
- if(!res.ok||data.ok===false) throw new Error(data.error||`Permintaan gagal (${res.status}).`);
- return data;
-}
+async function callEdge(name,payload){return portalCall('edge',name,payload);}
 
 window.requestAccount=async function(type){
  const isMember=type==='member';
