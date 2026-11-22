@@ -156,6 +156,55 @@ window.memberLogin=async function(){
   }
  }catch(e){status('memberLoginStatus',e.message,false)}
 }
+window.toggleMemberProfile=async function(){
+ const box=document.getElementById('memberProfileBox');
+ if(!box)return;
+ const opening=box.classList.contains('hidden');
+ box.classList.toggle('hidden',!opening);
+ if(!opening)return;
+ clearStatus('memberProfileStatusMsg');
+ try{
+   if(!memberToken) throw new Error('Sesi anggota tidak tersedia. Silakan login kembali.');
+   const d=await rpc('member_get_profile_v1',{p_token:memberToken});
+   document.getElementById('memberProfileName').value=d.nama||'';
+   document.getElementById('memberProfileNopung').value=d.nopung||'';
+   document.getElementById('memberProfileClass').value=d.kelas||'';
+
+   const ang=document.getElementById('memberProfileAngkatan');
+   const now=new Date().getFullYear();
+   const years=[];
+   for(let y=now;y>=1980;y--) years.push(String(y));
+   if(d.angkatan && !years.includes(String(d.angkatan))) years.unshift(String(d.angkatan));
+   ang.innerHTML='<option value="">- Pilih -</option>'+years.map(y=>`<option value="${y}">${y}</option>`).join('');
+   ang.value=d.angkatan||'';
+
+   document.getElementById('memberProfileStatus').value=d.status||'';
+
+   const fac=document.getElementById('memberProfileFaculty');
+   const opts=Array.isArray(d.facultyOptions)?d.facultyOptions:[];
+   fac.innerHTML='<option value="">- Pilih -</option>'+opts.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+   fac.value=d.fakultas||'';
+ }catch(e){
+   status('memberProfileStatusMsg',e.message,false);
+ }
+}
+
+window.saveMemberProfile=async function(){
+ clearStatus('memberProfileStatusMsg');
+ try{
+   if(!memberToken) throw new Error('Sesi anggota tidak tersedia. Silakan login kembali.');
+   const d=await rpc('member_update_profile_v1',{
+     p_token:memberToken,
+     p_angkatan:document.getElementById('memberProfileAngkatan').value,
+     p_status:document.getElementById('memberProfileStatus').value,
+     p_fakultas:document.getElementById('memberProfileFaculty').value
+   });
+   status('memberProfileStatusMsg',d.message||'Profil berhasil disimpan.',true);
+ }catch(e){
+   status('memberProfileStatusMsg',e.message,false);
+ }
+}
+
 window.toggleMemberPinForm=function(forceOpen=false){
  const box=document.getElementById('memberPinBox');
  if(!box) return;
