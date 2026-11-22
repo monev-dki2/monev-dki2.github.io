@@ -1,7 +1,5 @@
 const SUPABASE_URL='https://doovdbzqlbwxckkydfwg.supabase.co';
 const SUPABASE_KEY='sb_publishable_gw4WQtfPZ4xtbcduTfAlSA_qLDPVTNK';
-const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-const sb=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const EXEC=['Terlaksana Offline','Terlaksana Online','Digantikan Tatsqif','Tidak Terlaksana'];
 const NAQIB=['Hadir Offline','Hadir Online','Tidak Hadir','Terlambat lebih dari 15 menit'];
@@ -27,7 +25,29 @@ let classes=[], memberToken='', secretaryToken='', walasToken='', adminToken='',
 
 function status(id,msg,ok=true){const e=document.getElementById(id);if(!e)return;e.textContent=msg;e.className='status '+(ok?'ok':'err');}
 function clearStatus(id){const e=document.getElementById(id);if(!e)return;e.textContent='';e.className='status';}
-async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw new Error(error.message||String(error));if(data&&data.ok===false)throw new Error(data.error||'Akses ditolak.');return data;}
+async function rpc(name,args={}){
+ const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${encodeURIComponent(name)}`,{
+   method:'POST',
+   mode:'cors',
+   cache:'no-store',
+   credentials:'omit',
+   headers:{
+     'apikey':SUPABASE_KEY,
+     'Authorization':`Bearer ${SUPABASE_KEY}`,
+     'Content-Type':'application/json',
+     'Accept':'application/json'
+   },
+   body:JSON.stringify(args||{})
+ });
+ let data=null;
+ try{data=await res.json()}catch(_){}
+ if(!res.ok){
+   const msg=data?.message||data?.error||data?.hint||`Permintaan gagal (${res.status}).`;
+   throw new Error(msg);
+ }
+ if(data&&typeof data==='object'&&!Array.isArray(data)&&data.ok===false) throw new Error(data.error||'Akses ditolak.');
+ return data;
+}
 function fillSelect(id,vals,selected=''){const e=document.getElementById(id);if(!e)return;e.innerHTML=vals.map(v=>`<option value="${esc(v)}"${v===selected?' selected':''}>${esc(v)}</option>`).join('');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function dot(ok,labelYes='Sudah',labelNo='Belum'){
