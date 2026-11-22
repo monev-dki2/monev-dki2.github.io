@@ -1,4 +1,13 @@
 const PORTAL_API='https://doovdbzqlbwxckkydfwg.supabase.co/functions/v1/portal-api';
+const SUPABASE_URL='https://doovdbzqlbwxckkydfwg.supabase.co';
+const SUPABASE_KEY='sb_publishable_gw4WQtfPZ4xtbcduTfAlSA_qLDPVTNK';
+let directSb=null;
+async function getDirectSb(){
+  if(directSb) return directSb;
+  const {createClient}=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  directSb=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  return directSb;
+}
 const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const EXEC=['Terlaksana Offline','Terlaksana Online','Digantikan Tatsqif','Tidak Terlaksana'];
 const NAQIB=['Hadir Offline','Hadir Online','Tidak Hadir','Terlambat lebih dari 15 menit'];
@@ -19,16 +28,39 @@ let classes=[], memberToken='', secretaryToken='', walasToken='', adminToken='',
 function status(id,msg,ok=true){const e=document.getElementById(id);if(!e)return;e.textContent=msg;e.className='status '+(ok?'ok':'err');}
 function clearStatus(id){const e=document.getElementById(id);if(!e)return;e.textContent='';e.className='status';}
 async function portalCall(kind,name,payload={}){
- const res=await fetch(PORTAL_API,{
-   method:'POST',
-   headers:{'Content-Type':'text/plain;charset=UTF-8'},
-   body:JSON.stringify({kind,name,payload})
- });
- let data=null;
- try{data=await res.json()}catch(_){}
- if(!res.ok) throw new Error(data?.error||data?.message||`Permintaan gagal (${res.status}).`);
- if(data&&data.ok===false) throw new Error(data.error||'Akses ditolak.');
- return data;
+ try{
+   const res=await fetch(PORTAL_API,{
+     method:'POST',
+     headers:{'Content-Type':'text/plain;charset=UTF-8'},
+     body:JSON.stringify({kind,name,payload})
+   });
+   let data=null;
+   try{data=await res.json()}catch(_){}
+   if(!res.ok) throw new Error(data?.error||data?.message||`Permintaan gagal (${res.status}).`);
+   if(data&&data.ok===false) throw new Error(data.error||'Akses ditolak.');
+   return data;
+ }catch(e){
+   if(!(e instanceof TypeError) && !/Failed to fetch|NetworkError|Load failed/i.test(String(e?.message||e))) throw e;
+   if(kind==='rpc'){
+     const sb=await getDirectSb();
+     const {data,error}=await sb.rpc(name,payload);
+     if(error) throw new Error(error.message||String(error));
+     if(data&&typeof data==='object'&&!Array.isArray(data)&&data.ok===false) throw new Error(data.error||'Akses ditolak.');
+     return data;
+   }
+   if(kind==='edge'){
+     const res=await fetch(`${SUPABASE_URL}/functions/v1/${name}`,{
+       method:'POST',
+       headers:{'Content-Type':'application/json'},
+       body:JSON.stringify(payload)
+     });
+     let data={};
+     try{data=await res.json()}catch(_){}
+     if(!res.ok||data.ok===false) throw new Error(data.error||`Permintaan gagal (${res.status}).`);
+     return data;
+   }
+   throw e;
+ }
 }
 async function rpc(name,args={}){return portalCall('rpc',name,args);}
 function fillSelect(id,vals,selected=''){const e=document.getElementById(id);if(!e)return;e.innerHTML=vals.map(v=>`<option value="${esc(v)}"${v===selected?' selected':''}>${esc(v)}</option>`).join('');}
